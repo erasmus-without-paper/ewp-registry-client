@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

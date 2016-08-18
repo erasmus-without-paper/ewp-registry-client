@@ -10,11 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import eu.erasmuswithoutpaper.registryclient.ApiSearchConditions;
-import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher;
-import eu.erasmuswithoutpaper.registryclient.ClientImpl;
-import eu.erasmuswithoutpaper.registryclient.ClientImplOptions;
-import eu.erasmuswithoutpaper.registryclient.RegistryClient;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenessException;
 
 import org.junit.Test;

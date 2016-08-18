@@ -14,10 +14,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import eu.erasmuswithoutpaper.registryclient.ApiSearchConditions;
-import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher;
-import eu.erasmuswithoutpaper.registryclient.ClientImpl;
-import eu.erasmuswithoutpaper.registryclient.ClientImplOptions;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.AssertionFailedException;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.RefreshFailureException;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenessException;

@@ -12,9 +12,9 @@ import java.util.concurrent.TimeUnit;
 
 import eu.erasmuswithoutpaper.registryclient.CatalogueDocument.CatalogueParserException;
 import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.Http200RegistryResponse;
+import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.Http200RegistryResponse.CouldNotDeserialize;
 import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.Http304RegistryResponse;
 import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.RegistryResponse;
-import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.Http200RegistryResponse.CouldNotDeserialize;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

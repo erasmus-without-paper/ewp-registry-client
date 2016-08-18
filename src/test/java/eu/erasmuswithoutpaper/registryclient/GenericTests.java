@@ -2,8 +2,6 @@ package eu.erasmuswithoutpaper.registryclient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import eu.erasmuswithoutpaper.registryclient.CatalogueDocument;
-
 import org.junit.Test;
 
 public class GenericTests extends TestBase {
