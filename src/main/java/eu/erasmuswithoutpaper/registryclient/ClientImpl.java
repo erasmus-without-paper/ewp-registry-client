@@ -37,8 +37,8 @@ import org.w3c.dom.Element;
  * copy of the Registry's catalogue to reside in your memory for fast access whenever needed:
  * </p>
  *
- * <pre>
- * {@literal @}Bean
+ * <pre style="margin: 1em 2em">
+ * &#64;Bean
  * public RegistryClient getEwpRegistryClient() {
  *   ClientImplOptions options = new ClientImplOptions();
  *   options.setAutoRefreshing(true);
@@ -54,18 +54,18 @@ import org.w3c.dom.Element;
  * </p>
  *
  * <p>
- * Note: Spring will automatically call close() on AutoClosable beans.
+ * Note: Spring will automatically call close() on {@link AutoCloseable} beans.
  * </p>
  *
  * <h3>Basic in-line usage</h3>
  *
  * <p>
- * When used in-line, remember to wrap it in try-with-resources (or, remember to call
+ * When used in-line, remember to wrap it in try-with-resources (or remember to call
  * {@link #close()} manually). If you will be creating new instances often, then it is recommended
  * to supply {@link ClientImplOptions#setPersistentCacheMap(Map)} in your <code>options</code>:
  * </p>
  *
- * <pre>
+ * <pre style="margin: 1em 2em">
  * ClientImplOptions options = new ClientImplOptions();
  * options.setAutoRefreshing(true);
  * options.setPersistentCacheMap(...); // e.g. memcached server
