@@ -56,7 +56,7 @@ Versioning strategy
 -------------------
 
 We'll try to use [semantic versioning](http://semver.org/)
-(`MAJOR.MINOR.PATCH`) on our releases.
+(`MAJOR.MINOR.PATCH`) for our release version numbers.
 
  * **Major version** is incremented when our changes are likely to break your
    builds or runtime behavior.

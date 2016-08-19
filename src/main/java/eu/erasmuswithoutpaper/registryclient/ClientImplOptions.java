@@ -165,8 +165,8 @@ public class ClientImplOptions {
   }
 
   /**
-   * Tell {@link ClientImpl} to use a given map as persistent cache between its runs. Default is
-   * <b>null</b>.
+   * Tell {@link ClientImpl} to use a given map as persistent cache between its subsequent
+   * instantiations. Default is <b>null</b>.
    *
    * <p>
    * If given, {@link ClientImpl} will use this map to keep a persistent copy of the catalogue. It
