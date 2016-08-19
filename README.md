@@ -66,3 +66,9 @@ We'll try to use [semantic versioning](http://semver.org/)
    of the `RegistryClient` interface.)
 
  * **Patch version** is incremented on bug fixes.
+
+
+Changelog
+---------
+
+See [here](CHANGELOG.md).
