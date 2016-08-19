@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
  * This implementation will be used by the {@link ClientImpl} unless a custom implementation will be
  * set via {@link ClientImplOptions#setCatalogueFetcher(CatalogueFetcher)} method.
  * </p>
+ *
+ * @since 1.0.0
  */
 public class DefaultCatalogueFetcher implements CatalogueFetcher {
 

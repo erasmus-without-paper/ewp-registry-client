@@ -1,11 +1,17 @@
 package eu.erasmuswithoutpaper.registryclient;
 
 /**
- * Describes a set of conditions to test against DOM elements found in the catalogue's
- * <code>&lt;apis-implemented&gt;</code> section.
+ * A set of conditions to test against when using
+ * {@link RegistryClient#findApi(ApiSearchConditions)}.
  *
- * @see RegistryClient#findApi(ApiSearchConditions)
- * @see RegistryClient#findApis(ApiSearchConditions)
+ * <p>
+ * It describes a set of conditions to test against API entries found in the Registry's catalogue
+ * catalogue response (in its <code>&lt;apis-implemented&gt;</code> section). Usually you will use
+ * this class in conjunction with {@link RegistryClient#findApi(ApiSearchConditions)} and
+ * {@link RegistryClient#findApis(ApiSearchConditions)} methods.
+ * </p>
+ *
+ * @since 1.0.0
  */
 public class ApiSearchConditions {
 

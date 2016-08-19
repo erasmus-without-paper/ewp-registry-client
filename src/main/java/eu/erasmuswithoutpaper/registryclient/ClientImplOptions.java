@@ -6,6 +6,8 @@ import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenes
 
 /**
  * Options passed to {@link ClientImpl} on construction.
+ *
+ * @since 1.0.0
  */
 public class ClientImplOptions {
 

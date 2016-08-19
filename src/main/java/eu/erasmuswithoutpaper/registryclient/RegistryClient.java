@@ -7,24 +7,25 @@ import java.util.Date;
 import org.w3c.dom.Element;
 
 /**
- * Allows to perform basic queries to EWP Registry Service.
+ * Allows to perform basic queries to <a href='https://registry.erasmuswithoutpaper.eu/'>EWP
+ * Registry Service</a>.
  *
  * <p>
  * This interface exists in order for developers to be able supply their own alternative
  * implementations (e.g. for testing purposes). Usually you will use {@link ClientImpl} as the
  * implementation of this interface. Remember to call {@link RegistryClient#close()} after you're
- * done with its instance!
+ * done with instances of this interface.
  * </p>
  *
- * <p>
- * See {@link ClientImpl} for examples of construction.
- * </p>
+ * @since 1.0.0
  */
 public interface RegistryClient extends AutoCloseable {
 
   /**
    * Thrown whenever one of the {@link RegistryClient}'s <code>assert*</code> methods fails its
    * assertion.
+   *
+   * @since 1.0.0
    */
   @SuppressWarnings("serial")
   public static class AssertionFailedException extends RegistryClientException {
@@ -38,6 +39,7 @@ public interface RegistryClient extends AutoCloseable {
    * Thrown when the catalogue refreshing fails for some reason.
    *
    * @see RegistryClient#refresh()
+   * @since 1.0.0
    */
   @SuppressWarnings({ "serial" })
   public static class RefreshFailureException extends RegistryClientException {
@@ -57,6 +59,8 @@ public interface RegistryClient extends AutoCloseable {
 
   /**
    * A common base for all checked exceptions related to {@link RegistryClient} handling.
+   *
+   * @since 1.0.0
    */
   @SuppressWarnings({ "serial" })
   public abstract static class RegistryClientException extends Exception {
@@ -76,6 +80,8 @@ public interface RegistryClient extends AutoCloseable {
 
   /**
    * A common base for all runtime exceptions related to {@link RegistryClient} handling.
+   *
+   * @since 1.0.0
    */
   @SuppressWarnings("serial")
   public abstract class RegistryClientRuntimeException extends RuntimeException {
@@ -100,6 +106,8 @@ public interface RegistryClient extends AutoCloseable {
    * {@link ClientImplOptions#setMaxAcceptableStaleness(long)}. You can also check
    * {@link RegistryClient#getExpiryDate()} manually and make decisions based on its value.
    * </p>
+   *
+   * @since 1.0.0
    */
   @SuppressWarnings("serial")
   public static class UnacceptableStalenessException extends RegistryClientRuntimeException {

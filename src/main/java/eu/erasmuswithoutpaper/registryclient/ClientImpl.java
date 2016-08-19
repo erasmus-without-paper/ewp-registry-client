@@ -73,6 +73,8 @@ import org.w3c.dom.Element;
  *   // Your queries.
  * }
  * </pre>
+ *
+ * @since 1.0.0
  */
 public class ClientImpl implements RegistryClient {
 

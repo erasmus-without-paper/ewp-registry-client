@@ -9,15 +9,26 @@ import java.io.StreamCorruptedException;
 import java.util.Date;
 
 /**
- * Classes implementing this interface are able to provide a raw Registry API catalogue response.
+ * Provides a raw <a href='https://github.com/erasmus-without-paper/ewp-specs-api-registry'>Registry
+ * API</a> catalogue response.
+ *
+ * <p>
+ * Classes implementing this interface are able to acquire the catalogue response from the Registry
+ * Service. We provide a default implementation of this interface called
+ * {@link DefaultCatalogueFetcher}, but sometimes you might want to provide your own implementation,
+ * for example when running unit tests.
+ * </p>
  *
  * @see DefaultCatalogueFetcher
  * @see ClientImplOptions#setCatalogueFetcher(CatalogueFetcher)
+ * @since 1.0.0
  */
 public interface CatalogueFetcher {
 
   /**
    * Represents a HTTP 200 response received from the Registry API.
+   *
+   * @since 1.0.0
    */
   public static class Http200RegistryResponse extends RegistryResponse {
 
@@ -98,6 +109,8 @@ public interface CatalogueFetcher {
 
   /**
    * Represents a HTTP 304 response received from the Registry API.
+   *
+   * @since 1.0.0
    */
   public static class Http304RegistryResponse extends RegistryResponse {
 
@@ -112,6 +125,8 @@ public interface CatalogueFetcher {
   /**
    * A common base for both {@link Http200RegistryResponse} and {@link Http304RegistryResponse}
    * responses.
+   *
+   * @since 1.0.0
    */
   public abstract static class RegistryResponse {
 
