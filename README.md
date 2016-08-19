@@ -11,6 +11,15 @@ Of course, you are not required to use this client. You can also make use of
 [Registry API][registry-api] directly.
 
 
+Dependencies
+------------
+
+Requires **Java 7**. Apart from that, and a tiny [SLF4J](http://slf4j.org/) API
+library, *no other dependecies are required*.
+
+The resulting JAR is only `34kB` in size (as of version `1.0.0`).
+
+
 Installation
 ------------
 
