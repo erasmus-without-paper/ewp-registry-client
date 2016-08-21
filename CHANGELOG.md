@@ -2,13 +2,18 @@ Release notes
 =============
 
 
-1.0.1-SNAPSHOT
+1.1.0-SNAPSHOT
 --------------
 
 *(unreleased)*
 
-Just some minor fixes to javadocs: Added missing `@since` tags, fixed some
-typos, extended some of the class and interface descriptions.
+ * `DefaultCatalogueFetcher` has a new constructor which allows it to use an
+   alternate Registry Service installation (e.g.
+   `dev-registry.erasmuswithoutpaper.eu`, instead of the default
+   `registry.erasmuswithoutpaper.eu`).
+
+ * Minor fixes to javadocs: Added missing `@since` tags, fixed some typos,
+   extended some of the class and interface descriptions.
 
 
 1.0.0

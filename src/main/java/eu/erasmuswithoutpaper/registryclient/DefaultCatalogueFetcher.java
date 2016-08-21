@@ -3,6 +3,7 @@ package eu.erasmuswithoutpaper.registryclient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 
@@ -12,11 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default implementation of the {@link CatalogueFetcher}.
+ * A {@link CatalogueFetcher} which retrieves its <code>&lt;catalogue&gt;</code> response directly
+ * from the <a href='https://registry.erasmuswithoutpaper.eu/'>Registry Service</a>.
  *
  * <p>
- * This implementation will be used by the {@link ClientImpl} unless a custom implementation will be
- * set via {@link ClientImplOptions#setCatalogueFetcher(CatalogueFetcher)} method.
+ * This default implementation will be used by the {@link ClientImpl} unless a custom implementation
+ * will be set via {@link ClientImplOptions#setCatalogueFetcher(CatalogueFetcher)} method.
  * </p>
  *
  * @since 1.0.0
@@ -36,10 +38,41 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     return buffer.toByteArray();
   }
 
+  private final String registryDomain;
+
+  /**
+   * Initialize with the default (official) Registry Service (
+   * <code>registry.erasmuswithoutpaper.eu</code>).
+   */
+  public DefaultCatalogueFetcher() {
+    this.registryDomain = "registry.erasmuswithoutpaper.eu";
+  }
+
+  /**
+   * Allows you to use an alternate installation of the Registry Service.
+   *
+   * <p>
+   * In particular, during the development you might want to use
+   * <code>dev-registry.erasmuswithoutpaper.eu</code>.
+   * </p>
+   *
+   * @param customRegistryDomain domain name at which an alternate Registry Service installation has
+   *        been set up.
+   * @since 1.1.0
+   */
+  public DefaultCatalogueFetcher(String customRegistryDomain) {
+    this.registryDomain = customRegistryDomain;
+  }
+
   @Override
   public RegistryResponse fetchCatalogue(String previousETag) throws IOException {
-    logger.debug("Opening HTTPS connection to the Registry API");
-    URL url = new URL("https://registry.erasmuswithoutpaper.eu/catalogue-v1.xml");
+    URL url;
+    try {
+      url = new URL("https://" + this.registryDomain + "/catalogue-v1.xml");
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+    logger.debug("Opening HTTPS connection to " + url);
     HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
     conn.setRequestMethod("GET");
     conn.setAllowUserInteraction(false);
