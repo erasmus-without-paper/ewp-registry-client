@@ -2,10 +2,10 @@ Release notes
 =============
 
 
-1.1.0-SNAPSHOT
---------------
+1.1.0
+-----
 
-*(unreleased)*
+*Released on 2016-08-21*
 
  * `DefaultCatalogueFetcher` has a new constructor which allows it to use an
    alternate Registry Service installation (e.g.
