@@ -9,8 +9,8 @@ import java.io.StreamCorruptedException;
 import java.util.Date;
 
 /**
- * Provides a raw <a href='https://github.com/erasmus-without-paper/ewp-specs-api-registry'>Registry
- * API</a> catalogue response.
+ * Provides a raw <code>&lt;catalogue&gt;</code> HTTP response, as specified in the
+ * <a href='https://github.com/erasmus-without-paper/ewp-specs-api-registry'>Registry API</a>.
  *
  * <p>
  * Classes implementing this interface are able to acquire the catalogue response from the Registry
@@ -26,7 +26,7 @@ import java.util.Date;
 public interface CatalogueFetcher {
 
   /**
-   * Represents a HTTP 200 response received from the Registry API.
+   * Represents a HTTP 200 Registry catalogue response.
    *
    * @since 1.0.0
    */
@@ -108,7 +108,7 @@ public interface CatalogueFetcher {
   }
 
   /**
-   * Represents a HTTP 304 response received from the Registry API.
+   * Represents a HTTP 304 Registry catalogue response.
    *
    * @since 1.0.0
    */
@@ -123,8 +123,8 @@ public interface CatalogueFetcher {
   }
 
   /**
-   * A common base for both {@link Http200RegistryResponse} and {@link Http304RegistryResponse}
-   * responses.
+   * A common base for both Registry catalogue responses. ({@link Http200RegistryResponse} and
+   * {@link Http304RegistryResponse}.)
    *
    * @since 1.0.0
    */

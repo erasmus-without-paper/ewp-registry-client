@@ -1,22 +1,27 @@
 EWP Registry Client
 ===================
 
-Java implementation of an **EWP Registry Service** client. Allows you to
-discover institutions in the EWP Network, and APIs implemented by them.
+Java implementation of an **EWP Registry Service** client.
 
- * [What is EWP? What APIs can I search for?][develhub]
- * [What is the purpose of the EWP Registry Service?][registry-intro]
+ * When you're implementing a client, it allows you to **discover
+   institutions** in the network, **and APIs** implemented by them.
 
-Of course, you are not required to use this client. You can also make use of
-[Registry API][registry-api] directly.
+ * When you're implementing a server, it allows to **verify incoming
+   requests** (prove that they come from within the EWP Network, and prove
+   which institutions the requester covers).
+
+Of course, you are not required to use this client - you can also make use of
+the [Registry API][registry-api] directly. You can also learn more on EWP's
+architecture [here][architecture], and get information on all other related
+tools and specifications [here][develhub].
 
 
 Installation and Documentation
 ------------------------------
 
-Requires **Java 7**. Apart from that, and a tiny [SLF4J](http://slf4j.org/) API
-library, *no other dependecies are required*. The resulting JAR is only `34kB`
-in size (as of version `1.0.0`).
+Requires **Java 7 SE**. Apart from that, and a tiny [SLF4J](http://slf4j.org/)
+API library, *no other dependencies are required*. The resulting JAR is only
+`34kB` in size (as of version `1.0.0`).
 
 Releases are deployed to *Maven Central Repository*. You'll simply need to
 include a proper reference in your build's dependencies. Click the image below
@@ -36,11 +41,7 @@ You can also browse the project's Javadocs here:
 single implementation of this interface called `ClientImpl`. Please review
 `ClientImpl`'s javadocs for examples of usage.
 
-
-Where is the changelog?
------------------------
-
-Release notes are kept in a [separate file](CHANGELOG.md).
+**Upgrading?** Check out the [changelog (release notes)](CHANGELOG.md).
 
 
 Versioning strategy
@@ -56,9 +57,10 @@ release version numbers.
    such changes still can break your builds, if you have custom implementations
    of the `RegistryClient` interface.)
 
- * **Patch version** is incremented on bug fixes.
+ * **Patch version** is incremented on bug fixes, documentation updates, etc.
 
 
 [develhub]: http://developers.erasmuswithoutpaper.eu/
-[registry-intro]: https://github.com/erasmus-without-paper/ewp-specs-architecture#registry
+[architecture]: https://github.com/erasmus-without-paper/ewp-specs-architecture
 [registry-api]: https://github.com/erasmus-without-paper/ewp-specs-api-registry
+[registry-service]: https://registry.erasmuswithoutpaper.eu/

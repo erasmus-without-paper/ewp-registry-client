@@ -21,20 +21,24 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 /**
- * A thread-safe {@link RegistryClient} implementation with internal catalogue copy and background
- * synchronization options.
- *
  * <p>
- * {@link ClientImpl} keeps a copy of the Registry's catalogue in memory and allows all queries to
- * be performed fast, without the need to query the remote server. This copy can be refreshed both
- * manually or automatically (see {@link ClientImplOptions#setAutoRefreshing(boolean)} for details).
+ * A thread-safe {@link RegistryClient} implementation with in-memory catalogue copy and background
+ * synchronization options.
  * </p>
  *
- * <h3>Usage as an {@literal @}Autowired Spring bean</h3>
+ * <ul>
+ * <li>{@link ClientImpl} keeps a copy of the Registry's catalogue <b>in memory</b>, and thus allows
+ * all API queries to return <b>immediately</b> (without the need to query the remote server in the
+ * same thread).</li>
+ * <li>The in-memory copy of the catalogue <b>can be refreshed</b> both manually and
+ * <b>automatically</b> (see {@link ClientImplOptions#setAutoRefreshing(boolean)} for details).</li>
+ * </ul>
+ *
+ * <h3>Example 1: Use it as an {@literal @}Autowired Spring bean</h3>
  *
  * <p>
- * If you're using Spring, then the you can use this client as a singleton bean. It will cause a
- * copy of the Registry's catalogue to reside in your memory for fast access whenever needed:
+ * If you're using Spring or a similar IOT container, then you can use this client as a singleton
+ * bean:
  * </p>
  *
  * <pre style="margin: 1em 2em">
@@ -49,20 +53,21 @@ import org.w3c.dom.Element;
  * <p>
  * If you believe that you won't be using the client much (and you don't want to keep it in memory
  * all the time), then you can also use a different scope for your bean (e.g.
- * <code>{@literal @Scope("request")}</code>). In such cases however, it is recommended to supply
- * {@link ClientImplOptions#setPersistentCacheMap(Map)} (to speed up initialization).
+ * <code>{@literal @Scope("request")}</code>). In such cases however, it is recommended to supply a
+ * {@link ClientImplOptions#setPersistentCacheMap(Map)} to speed up initialization.
  * </p>
  *
  * <p>
- * Note: Spring will automatically call close() on {@link AutoCloseable} beans.
+ * Note: Spring will automatically call close() on {@link AutoCloseable} beans, so you don't need to
+ * call it yourself.
  * </p>
  *
- * <h3>Basic in-line usage</h3>
+ * <h3>Example 2: Use it in-line</h3>
  *
  * <p>
- * When used in-line, remember to wrap it in try-with-resources (or remember to call
- * {@link #close()} manually). If you will be creating new instances often, then it is recommended
- * to supply {@link ClientImplOptions#setPersistentCacheMap(Map)} in your <code>options</code>:
+ * When used in-line, remember to wrap it in try-with-resources statement (or remember to call
+ * {@link #close()} manually). It is recommended to supply
+ * {@link ClientImplOptions#setPersistentCacheMap(Map)} in your <code>options</code>:
  * </p>
  *
  * <pre style="margin: 1em 2em">
@@ -73,6 +78,13 @@ import org.w3c.dom.Element;
  *   // Your queries.
  * }
  * </pre>
+ *
+ * <p>
+ * This approach is rather <b>discouraged</b> because the catalogue does not reside in memory
+ * between runs, and needs to be parsed before each use. It's also more susceptible to suffer from
+ * possible Registry Service downtime. It may however have its merits if you're planning to use the
+ * Registry only rarely.
+ * </p>
  *
  * @since 1.0.0
  */
