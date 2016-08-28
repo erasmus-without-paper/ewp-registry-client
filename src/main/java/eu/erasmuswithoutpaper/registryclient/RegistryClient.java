@@ -36,9 +36,8 @@ public interface RegistryClient extends AutoCloseable {
   }
 
   /**
-   * Thrown when the catalogue refreshing fails for some reason.
+   * Thrown by {@link RegistryClient#refresh()} when the catalogue refreshing fails for some reason.
    *
-   * @see RegistryClient#refresh()
    * @since 1.0.0
    */
   @SuppressWarnings({ "serial" })
@@ -58,7 +57,7 @@ public interface RegistryClient extends AutoCloseable {
   }
 
   /**
-   * A common base for all checked exceptions related to {@link RegistryClient} handling.
+   * A common base for all {@link RegistryClient} checked exceptions.
    *
    * @since 1.0.0
    */
@@ -79,7 +78,7 @@ public interface RegistryClient extends AutoCloseable {
   }
 
   /**
-   * A common base for all runtime exceptions related to {@link RegistryClient} handling.
+   * A common base for all {@link RegistryClient} runtime exceptions.
    *
    * @since 1.0.0
    */
@@ -88,8 +87,8 @@ public interface RegistryClient extends AutoCloseable {
   }
 
   /**
-   * This exception is thrown by {@link RegistryClient} implementations when their internal copy of
-   * the Registry's catalogue is "too old".
+   * Thrown by multiple {@link RegistryClient} methods when their internal copy of the Registry's
+   * catalogue is "too old".
    *
    * <p>
    * Most {@link RegistryClient} implementations will keep an internal copy of the Registry's
