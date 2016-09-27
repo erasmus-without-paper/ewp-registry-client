@@ -1,0 +1,10 @@
+<FindBugsFilter>
+    <Match>
+        <Class name="eu.erasmuswithoutpaper.registryclient.CatalogueDocument$1" />
+        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON" />
+    </Match>
+    <Match>
+        <Class name="eu.erasmuswithoutpaper.registryclient.CatalogueFetcher$Http200RegistryResponse" />
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+</FindBugsFilter>

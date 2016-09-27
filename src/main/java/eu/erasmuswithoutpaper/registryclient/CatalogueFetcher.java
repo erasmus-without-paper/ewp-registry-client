@@ -30,7 +30,7 @@ public interface CatalogueFetcher {
    *
    * @since 1.0.0
    */
-  public static class Http200RegistryResponse extends RegistryResponse {
+  class Http200RegistryResponse extends RegistryResponse {
 
     /**
      * Thrown by {@link Http200RegistryResponse#deserialize(byte[])} when the raw data could not be
@@ -112,7 +112,7 @@ public interface CatalogueFetcher {
    *
    * @since 1.0.0
    */
-  public static class Http304RegistryResponse extends RegistryResponse {
+  class Http304RegistryResponse extends RegistryResponse {
 
     /**
      * @param expires value of the HTTP Expires header received with the response.
@@ -128,7 +128,7 @@ public interface CatalogueFetcher {
    *
    * @since 1.0.0
    */
-  public abstract static class RegistryResponse {
+  abstract class RegistryResponse {
 
     private final Date expires;
 

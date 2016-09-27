@@ -2,6 +2,13 @@ Release notes
 =============
 
 
+Unreleased
+----------
+
+ * `ClientImplOptions#getAutoRefreshing()` method has been renamed to
+   `isAutoRefreshing()`. The previous name is kept, but deprecated.
+
+
 1.1.0
 -----
 

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,7 +65,7 @@ class CatalogueDocument {
       throw new RuntimeException(e);
     }
     byte[] binDigest = md.digest();
-    return DatatypeConverter.printHexBinary(binDigest).toLowerCase();
+    return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
   }
 
   private static String getApiIndexKey(String namespaceUri, String localName) {
@@ -75,7 +76,7 @@ class CatalogueDocument {
    * Convert <code>&lt;other-id&gt;</code> value to its canonical form.
    */
   private static String getCanonicalId(String value) {
-    return value.trim().toLowerCase();
+    return value.trim().toLowerCase(Locale.ENGLISH);
   }
 
   /**
@@ -112,8 +113,8 @@ class CatalogueDocument {
     int[] i2 = new int[3];
     try {
       for (int i = 0; i < 3; i++) {
-        i1[i] = Integer.valueOf(s1[i]);
-        i2[i] = Integer.valueOf(s2[i]);
+        i1[i] = Integer.parseInt(s1[i]);
+        i2[i] = Integer.parseInt(s2[i]);
       }
     } catch (NumberFormatException e) {
       return false;

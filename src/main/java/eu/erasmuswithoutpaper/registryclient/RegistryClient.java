@@ -28,7 +28,7 @@ public interface RegistryClient extends AutoCloseable {
    * @since 1.0.0
    */
   @SuppressWarnings("serial")
-  public static class AssertionFailedException extends RegistryClientException {
+  class AssertionFailedException extends RegistryClientException {
 
     public AssertionFailedException(String message) {
       super(message);
@@ -41,7 +41,7 @@ public interface RegistryClient extends AutoCloseable {
    * @since 1.0.0
    */
   @SuppressWarnings({ "serial" })
-  public static class RefreshFailureException extends RegistryClientException {
+  class RefreshFailureException extends RegistryClientException {
 
     public RefreshFailureException(Exception cause) {
       super(cause);
@@ -62,7 +62,7 @@ public interface RegistryClient extends AutoCloseable {
    * @since 1.0.0
    */
   @SuppressWarnings({ "serial" })
-  public abstract static class RegistryClientException extends Exception {
+  abstract class RegistryClientException extends Exception {
 
     protected RegistryClientException(Exception cause) {
       super(cause);
@@ -83,7 +83,7 @@ public interface RegistryClient extends AutoCloseable {
    * @since 1.0.0
    */
   @SuppressWarnings("serial")
-  public abstract class RegistryClientRuntimeException extends RuntimeException {
+  abstract class RegistryClientRuntimeException extends RuntimeException {
   }
 
   /**
@@ -109,13 +109,13 @@ public interface RegistryClient extends AutoCloseable {
    * @since 1.0.0
    */
   @SuppressWarnings("serial")
-  public static class UnacceptableStalenessException extends RegistryClientRuntimeException {
+  class UnacceptableStalenessException extends RegistryClientRuntimeException {
   }
 
   /**
    * Official Registry API catalogue's namespace URI.
    */
-  public static final String REGISTRY_CATALOGUE_V1_NAMESPACE_URI =
+  String REGISTRY_CATALOGUE_V1_NAMESPACE_URI =
       "https://github.com/erasmus-without-paper/ewp-specs-api-registry/tree/stable-v1";
 
   /**

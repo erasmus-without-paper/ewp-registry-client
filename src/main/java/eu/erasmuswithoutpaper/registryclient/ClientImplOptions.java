@@ -36,8 +36,13 @@ public class ClientImplOptions {
     this.timeBetweenRetries = 180000;
   }
 
-  public boolean getAutoRefreshing() {
-    return this.autoRefreshing;
+  /**
+   * @return Same as {@link #isAutoRefreshing()}.
+   * @deprecated As of release 1.2.0, replaced by {@link #isAutoRefreshing()}.
+   */
+  @Deprecated
+  public boolean getAutoRefreshing() { // NOPMD
+    return this.isAutoRefreshing();
   }
 
   public CatalogueFetcher getCatalogueFetcher() {
@@ -68,6 +73,14 @@ public class ClientImplOptions {
 
   public long getTimeBetweenRetries() {
     return this.timeBetweenRetries;
+  }
+
+  /**
+   * @return The value previously set via {@link #setAutoRefreshing(boolean)}.
+   * @since 1.2.0
+   */
+  public boolean isAutoRefreshing() {
+    return this.autoRefreshing;
   }
 
   /**

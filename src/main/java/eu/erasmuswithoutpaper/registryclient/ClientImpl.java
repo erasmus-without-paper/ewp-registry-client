@@ -103,13 +103,13 @@ public class ClientImpl implements RegistryClient {
    *
    * <p>
    * This is not final, because a new instance of the {@link CatalogueDocument} is created whenever
-   * the content of the catalogue changes (see {@link ClientImplOptions#getAutoRefreshing()}).
+   * the content of the catalogue changes (see {@link ClientImplOptions#isAutoRefreshing()}).
    * </p>
    */
   private volatile CatalogueDocument doc;
 
   /**
-   * This will be used if {@link ClientImplOptions#getAutoRefreshing()} is true. Otherwise, it will
+   * This will be used if {@link ClientImplOptions#isAutoRefreshing()} is true. Otherwise, it will
    * be null.
    */
   private final ScheduledExecutorService executor;
@@ -172,7 +172,7 @@ public class ClientImpl implements RegistryClient {
       }
     }
 
-    if (options.getAutoRefreshing()) {
+    if (options.isAutoRefreshing()) {
 
       /*
        * If our current copy of the catalogue has expired, then we will attempt to refresh it during
