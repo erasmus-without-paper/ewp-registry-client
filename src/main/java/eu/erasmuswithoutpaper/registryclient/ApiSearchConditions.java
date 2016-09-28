@@ -81,6 +81,31 @@ public class ApiSearchConditions {
   }
 
   /**
+   * Require the API to be of a given class, and to have a <code>version</code> attribute greater or
+   * equal to the provided one.
+   *
+   * <p>
+   * This method is a shorthand which allows you to call
+   * {@link #setApiClassRequired(String, String)} and {@link #setMinVersionRequired(String)} both in
+   * one call.
+   * </p>
+   *
+   * @param namespaceUri Required namespaceURI of the API entry element, or <b>null</b> if no
+   *        requirements should be set.
+   * @param localName Required localName of the API entry element, or <b>null</b> if no requirements
+   *        should be set.
+   * @param minVersionRequired as described in {@link #setMinVersionRequired(String)}.
+   * @return This object.
+   * @since 1.2.0
+   */
+  public ApiSearchConditions setApiClassRequired(String namespaceUri, String localName,
+      String minVersionRequired) {
+    this.setApiClassRequired(namespaceUri, localName);
+    this.setMinVersionRequired(minVersionRequired);
+    return this;
+  }
+
+  /**
    * Require the API entry to have a <code>version</code> attribute greater or equal to the provided
    * one.
    *

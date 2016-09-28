@@ -5,6 +5,11 @@ Release notes
 Unreleased
 ----------
 
+ * New `setApiClassRequired(namespaceUri, localName, version)` method in
+   `ApiSearchConditions` class. This is just a shorthand which allows you to
+   call `setApiClassRequired(namespaceUri, localName)` and
+   `setMinVersionRequired(version)` both in one call.
+
  * `ClientImplOptions#getAutoRefreshing()` method has been renamed to
    `isAutoRefreshing()`. The previous name is kept, but deprecated.
 
