@@ -36,7 +36,7 @@ class Utils {
   }
 
   /**
-   * Transform a {@link NodeList} into a list of {@link Element}s.
+   * Transform a {@link NodeList} into a {@link List} of {@link Element}s.
    *
    * @param list a {@link NodeList}. It MUST contain {@link Element}s only.
    * @return a list of {@link Element}s.
@@ -45,5 +45,15 @@ class Utils {
   static List<? extends Element> asElementList(NodeList list) {
     return (List<? extends Element>) (list.getLength() == 0 ? Collections.<Element>emptyList()
         : new NodeListWrapper(list));
+  }
+
+  /**
+   * Transform a {@link NodeList} into a {@link List} of {@link Node}s.
+   *
+   * @param list a {@link NodeList}.
+   * @return a list of {@link Node}s.
+   */
+  static List<? extends Node> asNodeList(NodeList list) {
+    return list.getLength() == 0 ? Collections.<Node>emptyList() : new NodeListWrapper(list);
   }
 }

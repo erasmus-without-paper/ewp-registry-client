@@ -246,6 +246,31 @@ public class ClientImplBasicTests extends TestBase {
   }
 
   @Test
+  public void testFindHeiById() {
+    HeiEntry hei = cli.findHei("bob.example.com");
+    assertThat(hei).isNotNull();
+    assertThat(hei.getId()).isEqualTo("bob.example.com");
+    assertThat(hei.getName()).isIn("Bob's University", "University of the Bob");
+    assertThat(hei.getName("en")).isIn("Bob's University", "University of the Bob");
+    assertThat(hei.getName("es")).isEqualTo("Universidad de Bob");
+    assertThat(hei.getName("pl")).isNull();
+    assertThat(hei.getOtherIds("erasmus")).containsExactlyInAnyOrder("BOB01");
+    assertThat(hei.getOtherIds("previous-schac")).containsExactlyInAnyOrder("bob.com", "bob.org");
+    hei = cli.findHei("nonexistent");
+    assertThat(hei).isNull();
+  }
+
+  @Test
+  public void testFindHeiByOtherId() {
+    HeiEntry hei1 = cli.findHei("bob.example.com");
+    HeiEntry hei2 = cli.findHei("previous-schac", "bob.org");
+    assertThat(hei1).isNotNull();
+    assertThat(hei2).isNotNull();
+    assertThat(hei1).isSameAs(hei2);
+    assertThat(cli.findHei("nonexistent", "nonexistent")).isNull();
+  }
+
+  @Test
   public void testFindHeiId() {
     assertThat(cli.findHeiId("a", "b")).isNull();
     assertThat(cli.findHeiId("erasmus", "BOB01")).isEqualTo("bob.example.com");
@@ -254,6 +279,25 @@ public class ClientImplBasicTests extends TestBase {
     assertThat(cli.findHeiId("erasmus", " Bob 01 ")).isNull();
     assertThat(cli.findHeiId("erasmus", " Bob02 ")).isNull();
     assertThat(cli.findHeiId("pic", "12346")).isEqualTo("john.example.com");
+    assertThat(cli.findHeiId("previous-schac", "bob.com")).isEqualTo("bob.example.com");
+    assertThat(cli.findHeiId("previous-schac", "bob.org")).isEqualTo("bob.example.com");
+  }
+
+  @Test
+  public void testFindHeis() {
+    ApiSearchConditions conds = new ApiSearchConditions();
+    conds.setApiClassRequired("urn:other", "other-api", "1.1.6");
+    assertThat(cli.findHeis(conds)).containsExactlyInAnyOrder(cli.findHei("john.example.com"),
+        cli.findHei("fred.example.com"));
+    conds.setMinVersionRequired("7.0.0");
+    assertThat(cli.findHeis(conds)).isEmpty();
+  }
+
+  @Test
+  public void testGetAllHeis() {
+    assertThat(cli.getAllHeis()).containsExactlyInAnyOrder(cli.findHei("bob.example.com"),
+        cli.findHei("john.example.com"), cli.findHei("fred.example.com"),
+        cli.findHei("weird.example.com"));
   }
 
   @Test

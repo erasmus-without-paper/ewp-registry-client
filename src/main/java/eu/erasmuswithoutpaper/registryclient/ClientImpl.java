@@ -316,10 +316,39 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public HeiEntry findHei(String id) throws UnacceptableStalenessException {
+    // Since expiry date can only be extended, there is no need to synchronize.
+    this.assertAcceptableStaleness();
+    return this.doc.findHei(id);
+  }
+
+  @Override
+  public HeiEntry findHei(String type, String value) throws UnacceptableStalenessException {
+    // Since expiry date can only be extended, there is no need to synchronize.
+    this.assertAcceptableStaleness();
+    return this.doc.findHei(type, value);
+  }
+
+  @Override
   public String findHeiId(String type, String value) {
     // Since expiry date can only be extended, there is no need to synchronize.
     this.assertAcceptableStaleness();
     return this.doc.findHeiId(type, value);
+  }
+
+  @Override
+  public Collection<HeiEntry> findHeis(ApiSearchConditions conditions)
+      throws UnacceptableStalenessException {
+    // Since expiry date can only be extended, there is no need to synchronize.
+    this.assertAcceptableStaleness();
+    return this.doc.findHeis(conditions);
+  }
+
+  @Override
+  public Collection<HeiEntry> getAllHeis() throws UnacceptableStalenessException {
+    // Since expiry date can only be extended, there is no need to synchronize.
+    this.assertAcceptableStaleness();
+    return this.doc.getAllHeis();
   }
 
   @Override

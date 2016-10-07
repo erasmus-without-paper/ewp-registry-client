@@ -193,6 +193,16 @@ class CatalogueDocument {
   private final Map<String, Map<String, String>> heiIdMaps;
 
   /**
+   * "heiId -> HeiEntry" index for {@link #doc}.
+   *
+   * <p>
+   * This field is final, but its data is still mutable (and thus, not thread-safe). Unmodifiable
+   * views need to be used before its values are exposed outside.
+   * </p>
+   */
+  private final Map<String, HeiEntry> heiEntries;
+
+  /**
    * "Unique API ID -> API entry elements" index for {@link #doc}.
    *
    * <p>
@@ -292,6 +302,7 @@ class CatalogueDocument {
     this.hostHeis = new HashMap<>();
     this.heiIdMaps = new HashMap<>();
     this.apiIndex = new HashMap<>();
+    this.heiEntries = new HashMap<>();
 
     // Create indexes.
 
@@ -324,6 +335,12 @@ class CatalogueDocument {
         }
 
         mapForType.put(getCanonicalId(value), heiId);
+      }
+      for (Element heiElem : Utils.asElementList(
+          (NodeList) xpath.evaluate("r:institutions/r:hei", root, XPathConstants.NODESET))) {
+        String id = heiElem.getAttribute("id");
+        HeiEntry hei = new HeiEntryImpl(id, heiElem);
+        this.heiEntries.put(id, hei);
       }
       for (Element apiElem : Utils.asElementList(
           (NodeList) xpath.evaluate("r:host/r:apis-implemented/*", root, XPathConstants.NODESET))) {
@@ -439,22 +456,7 @@ class CatalogueDocument {
   Collection<Element> findApis(ApiSearchConditions conditions) {
     // First, determine the minimum set of elements we need to look through.
 
-    List<List<Element>> lookupBase = new ArrayList<>();
-    if (conditions.getRequiredNamespaceUri() != null && conditions.getRequiredLocalName() != null) {
-
-      // We can make use of our namespaceUri+localName index in this case.
-
-      List<Element> match = this.apiIndex.get(
-          getApiIndexKey(conditions.getRequiredNamespaceUri(), conditions.getRequiredLocalName()));
-      if (match != null) {
-        lookupBase.add(match);
-      }
-    } else {
-
-      // We do not have such an index. We'll need to browse through all entries.
-
-      lookupBase.addAll(this.apiIndex.values());
-    }
+    List<List<Element>> lookupBase = this.getApiLookupBase(conditions);
 
     // Then, iterate through all the elements and filter the ones that match.
 
@@ -472,6 +474,26 @@ class CatalogueDocument {
   }
 
   /**
+   * This implements {@link RegistryClient#findHei(String)}, but only for this particular version of
+   * the catalogue document.
+   */
+  HeiEntry findHei(String id) {
+    return this.heiEntries.get(id);
+  }
+
+  /**
+   * This implements {@link RegistryClient#findHei(String, String)}, but only for this particular
+   * version of the catalogue document.
+   */
+  HeiEntry findHei(String type, String value) {
+    String heiId = this.findHeiId(type, value);
+    if (heiId == null) {
+      return null;
+    }
+    return this.findHei(heiId);
+  }
+
+  /**
    * This implements {@link RegistryClient#findHeiId(String, String)}, but only for this particular
    * version of the catalogue document.
    */
@@ -483,6 +505,73 @@ class CatalogueDocument {
     }
     // It's thread-safe (Strings are immutable).
     return mapForType.get(value);
+  }
+
+  /**
+   * This implements {@link RegistryClient#findHeis(ApiSearchConditions)}, but only for this
+   * particular version of the catalogue document.
+   */
+  Collection<HeiEntry> findHeis(ApiSearchConditions conditions) {
+
+    // First, determine the minimum set of elements we need to look through.
+
+    List<List<Element>> lookupBase = this.getApiLookupBase(conditions);
+
+    // Then, find all <host> elements which include the matched APIs.
+
+    Set<Element> hostElems = new HashSet<>();
+    for (List<Element> lst : lookupBase) {
+      for (Element apiElem : lst) {
+        if (this.doesElementMatchConditions(apiElem, conditions)) {
+          Element hostElem = (Element) apiElem.getParentNode().getParentNode();
+          hostElems.add(hostElem);
+        }
+      }
+    }
+
+    // Finally, collect the unique HEI entries covered by these hosts.
+
+    Set<HeiEntry> results = new HashSet<>();
+    for (Element hostElem : hostElems) {
+      Set<String> heiIds = this.hostHeis.get(hostElem);
+      for (String heiId : heiIds) {
+        HeiEntry hei = this.heiEntries.get(heiId);
+        if (hei == null) {
+          // Should not happen, but just in case.
+          continue;
+        }
+        results.add(hei);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * This implements {@link RegistryClient#getAllHeis()}, but only for this particular version of
+   * the catalogue document.
+   */
+  Collection<HeiEntry> getAllHeis() {
+    return Collections.unmodifiableCollection(this.heiEntries.values());
+  }
+
+  List<List<Element>> getApiLookupBase(ApiSearchConditions conditions) {
+    List<List<Element>> lookupBase = new ArrayList<>();
+    if (conditions.getRequiredNamespaceUri() != null && conditions.getRequiredLocalName() != null) {
+
+      // We can make use of our namespaceUri+localName index in this case.
+
+      List<Element> match = this.apiIndex.get(
+          getApiIndexKey(conditions.getRequiredNamespaceUri(), conditions.getRequiredLocalName()));
+      if (match != null) {
+        lookupBase.add(match);
+      }
+    } else {
+
+      // We do not have such an index. We'll need to browse through all entries.
+
+      lookupBase.addAll(this.apiIndex.values());
+    }
+    return lookupBase;
   }
 
   /**

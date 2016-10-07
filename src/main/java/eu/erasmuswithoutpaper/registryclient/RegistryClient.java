@@ -269,12 +269,26 @@ public interface RegistryClient extends AutoCloseable {
       throws UnacceptableStalenessException;
 
   /**
-   * Find HEI's SCHAC ID by providing other type of ID.
+   * Retrieve a {@link HeiEntry} for a given HEI SCHAC ID.
+   *
+   * @param id HEI's SCHAC ID. If you don't have a SCHAC ID, then take a look at
+   *        {@link #findHei(String, String)} and {@link #findHeiId(String, String)}.
+   * @return {@link HeiEntry}, or null if no such HEI has been found.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.2.0
+   */
+  HeiEntry findHei(String id) throws UnacceptableStalenessException;
+
+  /**
+   * Find {@link HeiEntry} by other (non-SCHAC) ID.
    *
    * <p>
-   * Registry Service keeps a mapping of various popular HEI IDs and allows you to translate them to
-   * SCHAC IDs used within the EWP Network. You can use this method, for example, to periodically
-   * populate your database fields with SCHAC IDs.
+   * EWP Network uses SCHAC IDs as primary HEI IDs (if you know a SCHAC ID, then you should use the
+   * {@link #findHei(String)} method instead of this one). However, Registry Service also keeps a
+   * mapping of various other popular types of HEI IDs and allows you to translate them to SCHAC
+   * IDs. (You can use this method, for example, to periodically populate your database fields with
+   * SCHAC IDs.)
    * </p>
    *
    * @param type This can be any string, but in most cases you will use <code>"pic"</code>,
@@ -286,12 +300,76 @@ public interface RegistryClient extends AutoCloseable {
    *        argument, then this should be the PIC code of the HEI being searched for). Note, that
    *        {@link RegistryClient} implementations are allowed to transform your input slightly
    *        (e.g. remove whitespace, or ignore the case) before the matching occurs.
+   * @return {@link HeiEntry}, or <b>null</b> if no matching HEI has been found.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.2.0
+   */
+  HeiEntry findHei(String type, String value) throws UnacceptableStalenessException;
+
+  /**
+   * Find the HEI's SCHAC ID by providing an other (non-SCHAC) type of ID.
+   *
+   * <p>
+   * This is equivalent to calling {@link #findHei(String, String)} and then retrieving ID from it.
+   * </p>
+   *
+   * @param type as in {@link #findHei(String, String)}.
+   * @param value as in {@link #findHei(String, String)}.
    * @return Either String or <b>null</b>. String with a valid SCHAC ID of this HEI is returned, if
    *         a matching HEI was found. If no match was found, <b>null</b> is returned.
    * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
    *         {@link UnacceptableStalenessException} for more information.
    */
   String findHeiId(String type, String value) throws UnacceptableStalenessException;
+
+  /**
+   * Find HEIs for which a particular API has been implemented.
+   *
+   * <h3>Example</h3>
+   *
+   * <p>
+   * The following call will return all HEIs which have implemented EWP's Echo API in version
+   * <code>1.0.1</code> or later:
+   * </p>
+   *
+   * <pre>
+   * ApiSearchConditions myEchoConditions = new ApiSearchConditions();
+   * String ns = "https://github.com/erasmus-without-paper/"
+   *     + "ewp-specs-api-echo/blob/stable-v1/manifest-entry.xsd";
+   * myEchoConditions.setApiClassRequired(ns, "echo", "1.0.1");
+   * Collection&lt;HeiEntry&gt; heis = client.findHeis(myEchoConditions);
+   * </pre>
+   *
+   * <p>
+   * The above gives you HEIs, but not Echo API URLs. In order to get those, you will need to call
+   * {@link #findApi(ApiSearchConditions)} later on (with revised {@link ApiSearchConditions}).
+   * </p>
+   *
+   * @param conditions Describes the conditions which <b>at least one</b> of the HEIs' APIs must
+   *        meet.
+   * @return A list of matching {@link HeiEntry} objects.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.2.0
+   */
+  Collection<HeiEntry> findHeis(ApiSearchConditions conditions)
+      throws UnacceptableStalenessException;
+
+  /**
+   * Retrieve a list of all HEIs described in the Registry's catalogue.
+   *
+   * <p>
+   * Note, that this list may contain HEIs which don't implement any API. If you want to find HEIs
+   * which implement particular API, then use {@link #findHeis(ApiSearchConditions)} instead.
+   * </p>
+   *
+   * @return A list of {@link HeiEntry} objects.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.2.0
+   */
+  Collection<HeiEntry> getAllHeis() throws UnacceptableStalenessException;
 
   /**
    * Get the expiry date of the currently held copy of the catalogue.

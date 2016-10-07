@@ -121,6 +121,7 @@
             <other-id type="erasmus">BOB01</other-id>
             <other-id type="pic">12345</other-id>
             <other-id type="previous-schac">bob.com</other-id>
+            <other-id type="previous-schac">bob.org</other-id>
             <name xml:lang="en">Bob's University</name>
             <name xml:lang="en">University of the Bob</name>
             <name xml:lang="es">Universidad de Bob</name>

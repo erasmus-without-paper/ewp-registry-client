@@ -5,6 +5,19 @@ Release notes
 Unreleased
 ----------
 
+ * `RegistryClient` interface (and its implementation) has been extended with
+   new methods for searching and retrieving HEI attributes (as requested
+   [here](https://github.com/erasmus-without-paper/ewp-registry-client/issues/1)).
+
+   The following methods were added (details in javadocs):
+
+   - `HeiEntry findHei(String id)`
+   - `HeiEntry findHei(String type, String value)`
+   - `Collection<HeiEntry> findHeis(ApiSearchConditions conditions)`
+   - `Collection<HeiEntry> getAllHeis()`
+
+ * New `HeiEntry` interface was added.
+
  * New `setApiClassRequired(namespaceUri, localName, version)` method in
    `ApiSearchConditions` class. This is just a shorthand which allows you to
    call `setApiClassRequired(namespaceUri, localName)` and
