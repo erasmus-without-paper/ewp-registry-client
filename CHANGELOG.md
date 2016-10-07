@@ -2,8 +2,10 @@ Release notes
 =============
 
 
-Unreleased
-----------
+1.2.0
+-----
+
+*Released on 2016-10-07*
 
  * `RegistryClient` interface (and its implementation) has been extended with
    new methods for searching and retrieving HEI attributes (as requested
