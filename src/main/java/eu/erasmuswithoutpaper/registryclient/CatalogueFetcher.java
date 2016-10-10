@@ -77,7 +77,7 @@ public interface CatalogueFetcher {
      */
     public Http200RegistryResponse(byte[] content, String etag, Date expires) {
       super(expires);
-      this.content = content;
+      this.content = content.clone();
       this.etag = etag;
     }
 

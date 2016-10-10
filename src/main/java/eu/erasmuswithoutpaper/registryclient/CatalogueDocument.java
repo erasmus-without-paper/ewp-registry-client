@@ -31,6 +31,7 @@ import javax.xml.xpath.XPathFactory;
 import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.Http200RegistryResponse;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.RegistryClientException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -39,6 +40,7 @@ import org.xml.sax.SAXException;
 /**
  * Thread-safe (and mostly immutable) internal representation of the catalogue document.
  */
+@SuppressFBWarnings("SIC_INNER_SHOULD_BE_STATIC_ANON")
 class CatalogueDocument {
 
   @SuppressWarnings({ "serial" })
