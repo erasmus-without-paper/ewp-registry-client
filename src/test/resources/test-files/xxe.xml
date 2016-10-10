@@ -1,0 +1,19 @@
+<!DOCTYPE foo [
+   <!ELEMENT foo ANY >
+   <!ENTITY xxe SYSTEM "file:///etc/passwd" >
+]>
+<catalogue
+    xmlns="https://github.com/erasmus-without-paper/ewp-specs-api-registry/tree/stable-v1"
+    xmlns:d4="https://github.com/erasmus-without-paper/ewp-specs-api-discovery/blob/stable-v4/manifest-entry.xsd"
+>
+    <host>
+        <apis-implemented>
+            <d4:discovery version="4.0.0">
+                <d4:url>https://registry.erasmuswithoutpaper.eu/manifest.xml</d4:url>
+            </d4:discovery>
+            <other xmlns="uri:other">
+                &xxe;
+            </other>
+        </apis-implemented>
+    </host>
+</catalogue>

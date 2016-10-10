@@ -21,8 +21,6 @@ import java.util.Set;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -241,15 +239,7 @@ class CatalogueDocument {
    */
   CatalogueDocument(Http200RegistryResponse registryResponse) throws CatalogueParserException {
 
-    DocumentBuilder docBuilder;
-    try {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
-      factory.setIgnoringComments(true);
-      docBuilder = factory.newDocumentBuilder();
-    } catch (ParserConfigurationException e) {
-      throw new RuntimeException(e);
-    }
+    DocumentBuilder docBuilder = Utils.newSecureDocumentBuilder();
 
     this.expires = registryResponse.getExpires();
     this.etag = registryResponse.getETag();
