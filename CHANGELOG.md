@@ -1,6 +1,12 @@
 Release notes
 =============
 
+1.2.1
+-----
+
+ * Basic XXE prevention (see [here]
+   (https://github.com/erasmus-without-paper/ewp-registry-client/issues/2).
+
 
 1.2.0
 -----

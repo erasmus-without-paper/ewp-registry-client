@@ -9,6 +9,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -39,36 +41,14 @@ class Utils {
     }
   }
 
-  /**
-   * Get a new, safely configured instance of {@link DocumentBuilder}.
-   *
-   * @return a {@link DocumentBuilder} instance.
-   */
-  public static DocumentBuilder newSecureDocumentBuilder() {
+  private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+
+  private static void trySetFeature(DocumentBuilderFactory factory, String feature, boolean value) {
     try {
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-      dbf.setNamespaceAware(true);
-      dbf.setIgnoringComments(true);
-
-      /*
-       * XXE prevention. See here:
-       * https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#Java
-       */
-      String feature = null;
-      feature = "http://apache.org/xml/features/disallow-doctype-decl";
-      dbf.setFeature(feature, true);
-      feature = "http://xml.org/sax/features/external-general-entities";
-      dbf.setFeature(feature, false);
-      feature = "http://xml.org/sax/features/external-parameter-entities";
-      dbf.setFeature(feature, false);
-      feature = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
-      dbf.setFeature(feature, false);
-      dbf.setXIncludeAware(false);
-      dbf.setExpandEntityReferences(false);
-
-      return dbf.newDocumentBuilder();
+      factory.setFeature(feature, value);
     } catch (ParserConfigurationException e) {
-      throw new RuntimeException(e);
+      logger.warn("Your system's default DocumentBuilderFactory doesn't support the \"" + feature
+          + "\" feature. See https://github.com/erasmus-without-paper/ewp-registry-client/issues/2");
     }
   }
 
@@ -92,5 +72,33 @@ class Utils {
    */
   static List<? extends Node> asNodeList(NodeList list) {
     return list.getLength() == 0 ? Collections.<Node>emptyList() : new NodeListWrapper(list);
+  }
+
+  /**
+   * Get a new, safely configured instance of {@link DocumentBuilder}.
+   *
+   * @return a {@link DocumentBuilder} instance.
+   */
+  static DocumentBuilder newSecureDocumentBuilder() {
+    try {
+      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      dbf.setNamespaceAware(true);
+      dbf.setIgnoringComments(true);
+
+      /*
+       * XXE prevention. See here:
+       * https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#Java
+       */
+      trySetFeature(dbf, "http://apache.org/xml/features/disallow-doctype-decl", true);
+      trySetFeature(dbf, "http://xml.org/sax/features/external-general-entities", false);
+      trySetFeature(dbf, "http://xml.org/sax/features/external-parameter-entities", false);
+      trySetFeature(dbf, "http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+      dbf.setXIncludeAware(false);
+      dbf.setExpandEntityReferences(false);
+
+      return dbf.newDocumentBuilder();
+    } catch (ParserConfigurationException e) {
+      throw new RuntimeException(e);
+    }
   }
 }
