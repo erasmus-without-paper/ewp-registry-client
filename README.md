@@ -27,15 +27,15 @@ Releases are deployed to *Maven Central Repository*. You'll simply need to
 include a proper reference in your build's dependencies. Click the image below
 for the artifact details.
 
-[![Maven Central]
-(https://maven-badges.herokuapp.com/maven-central/eu.erasmuswithoutpaper/ewp-registry-client/badge.svg)]
-(https://maven-badges.herokuapp.com/maven-central/eu.erasmuswithoutpaper/ewp-registry-client)
+[
+    ![Maven Central](https://maven-badges.herokuapp.com/maven-central/eu.erasmuswithoutpaper/ewp-registry-client/badge.svg)
+](https://maven-badges.herokuapp.com/maven-central/eu.erasmuswithoutpaper/ewp-registry-client)
 
 You can also browse the project's Javadocs here:
 
-[![Javadocs]
-(http://javadoc.io/badge/eu.erasmuswithoutpaper/ewp-registry-client.svg?color=red)]
-(http://javadoc.io/doc/eu.erasmuswithoutpaper/ewp-registry-client)
+[
+    ![Javadocs](http://javadoc.io/badge/eu.erasmuswithoutpaper/ewp-registry-client.svg?color=red)
+](http://javadoc.io/doc/eu.erasmuswithoutpaper/ewp-registry-client)
 
 **Where to start?** We define the `RegistryClient` interface, and provide a
 single implementation of this interface called `ClientImpl`. Please review

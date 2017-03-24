@@ -6,8 +6,7 @@ Release notes
 
 *Released on 2016-10-11*
 
- * Basic XXE prevention (see [here]
-   (https://github.com/erasmus-without-paper/ewp-registry-client/issues/2)).
+ * Basic XXE prevention (see [here](https://github.com/erasmus-without-paper/ewp-registry-client/issues/2)).
 
 
 1.2.0
