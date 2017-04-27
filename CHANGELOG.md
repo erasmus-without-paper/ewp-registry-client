@@ -1,6 +1,17 @@
 Release notes
 =============
 
+
+1.3.0
+-----
+
+*Released on 2017-04-27*
+
+ * Added two convenience methods to `HeiEntry` interface - `getNameEnglish()`
+   and `getNameNonEnglish()` (see
+   [here](https://github.com/erasmus-without-paper/ewp-registry-client/pull/3)).
+
+
 1.2.1
 -----
 
