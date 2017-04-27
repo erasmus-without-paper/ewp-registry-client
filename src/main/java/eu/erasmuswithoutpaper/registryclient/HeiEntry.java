@@ -34,8 +34,15 @@ public interface HeiEntry {
   /**
    * Get a name in the given language, or <code>null</code>.
    *
-   * @param langCode An ISO 639-1 code of the language (2 lower-case letters).
-   * @return String (if the name was found), or <code>null</code> (if it wasn't).
+   * <p>
+   * Please note, that this operates on <b>exact</b> BCP 47 language tag values. This means that,
+   * for example, if the HEI name was described with "ru-Latn" xml:lang, then (currently) you won't
+   * retrieve this name by asking for "ru". This behavior MAY change in the future (we will probably
+   * consider it a backward-compatible change).
+   * </p>
+   *
+   * @param langCode BCP 47 language tag (e.g. "en" or "ru-Latn").
+   * @return String (if exact match was found), or <code>null</code> (if it wasn't).
    */
   String getName(String langCode);
 
