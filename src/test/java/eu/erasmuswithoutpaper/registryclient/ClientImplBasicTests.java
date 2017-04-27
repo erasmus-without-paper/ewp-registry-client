@@ -254,10 +254,31 @@ public class ClientImplBasicTests extends TestBase {
     assertThat(hei.getName("en")).isIn("Bob's University", "University of the Bob");
     assertThat(hei.getName("es")).isEqualTo("Universidad de Bob");
     assertThat(hei.getName("pl")).isNull();
+    assertThat(hei.getNameEnglish()).isIn("Bob's University", "University of the Bob");
+    assertThat(hei.getNameNonEnglish()).isIn("Universidad de Bob");
     assertThat(hei.getOtherIds("erasmus")).containsExactlyInAnyOrder("BOB01");
     assertThat(hei.getOtherIds("previous-schac")).containsExactlyInAnyOrder("bob.com", "bob.org");
     hei = cli.findHei("nonexistent");
     assertThat(hei).isNull();
+
+    // This one has its name only in English.
+
+    hei = cli.findHei("fred.example.com");
+    assertThat(hei.getNameEnglish()).isIn("Fred's University");
+    assertThat(hei.getNameNonEnglish()).isNull();
+
+    // And this one has a single name with no xml:lang specified.
+    // https://github.com/erasmus-without-paper/ewp-registry-client/pull/3#issuecomment-297671815
+
+    hei = cli.findHei("john.example.com");
+    assertThat(hei.getNameEnglish()).isNull();
+    assertThat(hei.getNameNonEnglish()).isIn("John's University");
+
+    // This one has a name in Spanish only.
+
+    hei = cli.findHei("weird.example.com");
+    assertThat(hei.getNameEnglish()).isNull();
+    assertThat(hei.getNameNonEnglish()).isIn("Universidad de Fantasmas");
   }
 
   @Test

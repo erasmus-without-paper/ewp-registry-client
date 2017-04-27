@@ -134,7 +134,7 @@
             <name xml:lang="en">Fred's University</name>
         </hei>
         <hei id="weird.example.com">
-            <name xml:lang="en">Weird University</name>
+            <name xml:lang="es">Universidad de Fantasmas</name>
         </hei>
     </institutions>
 </catalogue>
