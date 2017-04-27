@@ -30,6 +30,20 @@ public interface HeiEntry {
    *         will never get <code>null</code> here.
    */
   String getName();
+  
+  /**
+   * Get the english name of this HEI.
+   *
+   * @return We will try to return the name in English. If we cannot find it we will return <code>null</code> here.
+   */
+  String getEnglishName();
+  
+  /**
+   * Get the other name of this HEI.
+   *
+   * @return We will try to return the first name not in English. If we cannot find it we will return <code>null</code> here.
+   */
+  String getOtherName();
 
   /**
    * Get a name in the given language.
