@@ -92,6 +92,22 @@ class HeiEntryImpl implements HeiEntry {
   }
 
   @Override
+  public String getEnglishName()
+  {
+	  return this.getExtras().allNames.get("en");
+  }
+  
+  @Override
+  public String getOtherName()
+  {
+	  for(String s : this.getExtras().allNames.keySet()){
+		  if(!s.equals("en"))
+			  return this.getExtras().allNames.get(s);
+	  }
+	  return null;
+  }
+  
+  @Override
   public Collection<String> getOtherIds(String type) {
     List<String> values = this.getExtras().otherIds.get(type);
     if (values == null) {
