@@ -32,7 +32,7 @@ public interface HeiEntry {
   String getName();
 
   /**
-   * Get a name in the given language.
+   * Get a name in the given language, or <code>null</code>.
    *
    * @param langCode An ISO 639-1 code of the language (2 lower-case letters).
    * @return String (if the name was found), or <code>null</code> (if it wasn't).
@@ -40,7 +40,7 @@ public interface HeiEntry {
   String getName(String langCode);
 
   /**
-   * Get the English name of this HEI.
+   * Get the English name of this HEI, or <code>null</code>.
    *
    * @return We will try to return the name in English. If we cannot find it, we will return
    *         <code>null</code> (this differs from the behavior of {@link #getName()}).
@@ -48,7 +48,7 @@ public interface HeiEntry {
   String getNameEnglish();
 
   /**
-   * Get a non-English name of this HEI.
+   * Get a non-English name of this HEI, or <code>null</code>.
    *
    * @return We will try to return the first non-English name of this HEI. If we cannot find it (the
    *         HEI supplied only its English name), then <code>null</code> will be returned.

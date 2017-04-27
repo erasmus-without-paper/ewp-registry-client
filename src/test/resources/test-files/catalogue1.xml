@@ -131,7 +131,11 @@
             <name>John's University</name>
         </hei>
         <hei id="fred.example.com">
-            <name xml:lang="en">Fred's University</name>
+            <!--
+            It is only RECOMMENDED to use lower-case language codes (it is NOT "REQUIRED").
+            We want our client to catch the rarely used "weird" entries too.
+            -->
+            <name xml:lang="EN-Latn">Fred's University</name>
         </hei>
         <hei id="weird.example.com">
             <name xml:lang="es">Universidad de Fantasmas</name>

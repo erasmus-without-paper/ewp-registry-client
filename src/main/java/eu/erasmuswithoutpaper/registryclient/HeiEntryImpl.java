@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
@@ -16,7 +17,6 @@ import org.w3c.dom.Node;
 class HeiEntryImpl implements HeiEntry {
 
   private static class Extras {
-    private final String primaryName;
     private final Map<String, String> allNames;
     private final Map<String, List<String>> otherIds;
 
@@ -51,18 +51,6 @@ class HeiEntryImpl implements HeiEntry {
             // Ingore.
         }
       }
-      String primaryName = this.allNames.get("en");
-      if (primaryName == null) {
-        // No English name found. We'll use any name we have.
-        Collection<String> names = this.allNames.values();
-        if (names.size() > 0) {
-          primaryName = names.iterator().next();
-        } else {
-          // No name at all!
-          primaryName = hei.id;
-        }
-      }
-      this.primaryName = primaryName;
     }
   }
 
@@ -83,7 +71,17 @@ class HeiEntryImpl implements HeiEntry {
 
   @Override
   public String getName() {
-    return this.getExtras().primaryName;
+    String bestName = this.getNameEnglish();
+    if (bestName != null) {
+      return bestName;
+    }
+    // No English name found. We'll use any name we have.
+    bestName = this.getNameNonEnglish();
+    if (bestName != null) {
+      return bestName;
+    }
+    // No name at all! Fallback to HEI ID.
+    return this.id;
   }
 
   @Override
@@ -93,13 +91,25 @@ class HeiEntryImpl implements HeiEntry {
 
   @Override
   public String getNameEnglish() {
-    return this.getExtras().allNames.get("en");
+    String englishName = this.getExtras().allNames.get("en");
+    if (englishName != null) {
+      return englishName;
+    }
+    // No "en" found. Scan for other (less common) English xml:langs.
+    // https://github.com/erasmus-without-paper/ewp-registry-client/pull/3#issuecomment-297677150
+    for (String s : this.getExtras().allNames.keySet()) {
+      if (s.length() >= 2 && s.substring(0, 2).equalsIgnoreCase("en")) {
+        return this.getExtras().allNames.get(s);
+      }
+    }
+    // No English xml:langs found.
+    return null;
   }
 
   @Override
   public String getNameNonEnglish() {
     for (String s : this.getExtras().allNames.keySet()) {
-      if (!s.equals("en")) {
+      if (!s.toLowerCase(Locale.ROOT).startsWith("en")) {
         return this.getExtras().allNames.get(s);
       }
     }
