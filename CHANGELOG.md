@@ -2,6 +2,21 @@ Release notes
 =============
 
 
+1.3.1
+-----
+
+*Released on 2017-04-27*
+
+ * Better behavior of most name-related `HeiEntry` methods:
+
+   - `getName()`, `getNameEnglish()` and `getNameNonEnglish()` will now take
+     into account the fact that `xml:lang` attributes may contain upper-case
+     values, and various subtags and/or extensions.
+
+   - `getName(String langCode)` works as before, but a warning was added in the
+     docs, that `langCode` must be an exact match.
+
+
 1.3.0
 -----
 
