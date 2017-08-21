@@ -274,14 +274,14 @@ public class ClientImplBasicTests extends TestBase {
   @Test
   public void testFindApi() {
     ApiSearchConditions conds = new ApiSearchConditions();
-    String e1 =
-        "https://github.com/erasmus-without-paper/ewp-specs-api-echo/blob/stable-v1/manifest-entry.xsd";
-    conds.setApiClassRequired(e1, "echo");
+    String e2 =
+        "https://github.com/erasmus-without-paper/ewp-specs-api-echo/blob/stable-v2/manifest-entry.xsd";
+    conds.setApiClassRequired(e2, "echo");
     conds.setRequiredHei("bob.example.com");
     Element api = cli.findApi(conds);
-    assertThat(api.getNamespaceURI()).isEqualTo(e1);
+    assertThat(api.getNamespaceURI()).isEqualTo(e2);
     assertThat(api.getLocalName()).isEqualTo("echo");
-    assertThat(api.getAttribute("version")).isEqualTo("1.1.17");
+    assertThat(api.getAttribute("version")).isEqualTo("2.1.17");
     conds.setRequiredHei("fred.example.com");
     api = cli.findApi(conds);
     assertThat(api).isNull();
@@ -317,9 +317,9 @@ public class ClientImplBasicTests extends TestBase {
     assertThat(cli.findApis(conds)).hasSize(0);
     conds.setRequiredHei(null);
     assertThat(cli.findApis(conds)).hasSize(11);
-    String e1 =
-        "https://github.com/erasmus-without-paper/ewp-specs-api-echo/blob/stable-v1/manifest-entry.xsd";
-    conds.setApiClassRequired(e1, "echo");
+    String e2 =
+        "https://github.com/erasmus-without-paper/ewp-specs-api-echo/blob/stable-v2/manifest-entry.xsd";
+    conds.setApiClassRequired(e2, "echo");
     assertThat(cli.findApis(conds)).hasSize(2);
     conds.setApiClassRequired("urn:other", "other-api");
     assertThat(cli.findApis(conds)).hasSize(2);
@@ -336,7 +336,7 @@ public class ClientImplBasicTests extends TestBase {
     assertThat($(api).find("url").text()).isEqualTo("https://example.com/super-other");
 
     conds.setApiClassRequired(null, null);
-    assertThat(cli.findApis(conds)).hasSize(6);
+    assertThat(cli.findApis(conds)).hasSize(8);
     conds.setApiClassRequired("urn:bla", null);
     assertThat(cli.findApis(conds)).hasSize(2);
     conds.setMinVersionRequired("0");
