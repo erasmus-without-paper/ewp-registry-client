@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.cert.Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -30,6 +31,10 @@ public class ClientImplBasicTests extends TestBase {
   private static Certificate cert1024;
   private static Certificate cert1536;
   private static Certificate cert2048;
+  private static RSAPublicKey public512;
+  private static RSAPublicKey public1024;
+  private static RSAPublicKey public1536;
+  private static RSAPublicKey public2048;
 
   @BeforeClass
   public static void setUpClass() {
@@ -63,6 +68,13 @@ public class ClientImplBasicTests extends TestBase {
     cert1024 = getCert("cert1024.pem");
     cert1536 = getCert("cert1536.pem");
     cert2048 = getCert("cert2048.pem");
+
+    // Load our test RSA keys.
+
+    public512 = getPublicKey("public512.pem");
+    public1024 = getPublicKey("public1024.pem");
+    public1536 = getPublicKey("public1536.pem");
+    public2048 = getPublicKey("public2048.pem");
   }
 
   @AfterClass
@@ -71,32 +83,74 @@ public class ClientImplBasicTests extends TestBase {
   }
 
   @Test
-  public void testAreHeisCoveredByCertificate() {
+  public void sanityTest() {
+
+    // Test if all certs and keys are loaded properly, and that their fingerprints
+    // match what we expect.
+
+    assertThat(Utils.extractFingerprint(cert512))
+        .isEqualTo("ac738b33ba7e1347c7859dcbaf519b684fc127084c799259f53022ef1e26186f");
+    assertThat(Utils.extractFingerprint(cert1024))
+        .isEqualTo("0b9e993d1d4a4e1be879bc5be19c1c0b9073d7bfe1556e015c069c6df6231b7f");
+    assertThat(Utils.extractFingerprint(cert1536))
+        .isEqualTo("f47643e26f10fd1e5ffe2c933f0a5e6ccf831d789cd80a12720392e90a8f7d42");
+    assertThat(Utils.extractFingerprint(cert2048))
+        .isEqualTo("19fdd48a85595958035a1a42da8065709a585f78cc01b4df428f68eab39b9dda");
+
+    assertThat(Utils.extractFingerprint(public512))
+        .isEqualTo("a29969edd0d04f22bf19db9e417b181c63928accdc58ecf3ac662e51d8497791");
+    assertThat(Utils.extractFingerprint(public1024))
+        .isEqualTo("4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b");
+    assertThat(Utils.extractFingerprint(public1536))
+        .isEqualTo("eb7ab845698d1294a9f1754f2eaa0975c9d9454f183d99122c71ae9e7acd518e");
+    assertThat(Utils.extractFingerprint(public2048))
+        .isEqualTo("2e06b1d53a1b7e2c54377d44a4f6893761421e196bb83ad90932d95512c967d1");
+  }
+
+  @Test
+  public void testAreHeisCoveredByCertOfKey() {
     Collection<String> heiIds = new ArrayList<>();
     assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1024)).isTrue();
+    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1024)).isTrue();
     heiIds.add("john.example.com");
     assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1024)).isTrue();
+    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1024)).isTrue();
     heiIds.add("fred.example.com");
     assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1024)).isFalse();
+    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1024)).isFalse();
     assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1536)).isTrue();
+    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1536)).isTrue();
     heiIds.add("");
     assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1536)).isFalse();
+    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1536)).isFalse();
     heiIds.add(null);
     assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1536)).isFalse();
+    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1536)).isFalse();
 
     // Overloaded version
 
     assertThat(cli.areHeisCoveredByCertificate(new String[] {}, cert1024)).isTrue();
+    assertThat(cli.areHeisCoveredByClientKey(new String[] {}, public1024)).isTrue();
     assertThat(cli.areHeisCoveredByCertificate(new String[] { "john.example.com" }, cert1024))
+        .isTrue();
+    assertThat(cli.areHeisCoveredByClientKey(new String[] { "john.example.com" }, public1024))
         .isTrue();
     assertThat(cli.areHeisCoveredByCertificate(
         new String[] { "john.example.com", "fred.example.com" }, cert1024)).isFalse();
+    assertThat(cli.areHeisCoveredByClientKey(
+        new String[] { "john.example.com", "fred.example.com" }, public1024)).isFalse();
   }
 
   @Test
-  public void testAssertCertificateIsKnown() {
+  public void testAssertCertOrKeyIsKnown() {
     try {
       cli.assertCertificateIsKnown(cert512);
+      fail("Exception expected, but not thrown.");
+    } catch (AssertionFailedException e) {
+      assertThat(e).hasMessageContaining("was not recognized as a known EWP Client");
+    }
+    try {
+      cli.assertClientKeyIsKnown(public512);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
       assertThat(e).hasMessageContaining("was not recognized as a known EWP Client");
@@ -106,17 +160,33 @@ public class ClientImplBasicTests extends TestBase {
     } catch (AssertionFailedException e) {
       fail("Exception not expected, but thrown.", e);
     }
+    try {
+      cli.assertClientKeyIsKnown(public1024);
+    } catch (AssertionFailedException e) {
+      fail("Exception not expected, but thrown.", e);
+    }
   }
 
   @Test
-  public void testAssertHeiIsCoveredByCertificate() {
+  public void testAssertHeiIsCoveredByCertOrKey() {
     try {
       cli.assertHeiIsCoveredByCertificate("bob.example.com", cert1024);
     } catch (AssertionFailedException e) {
       throw new RuntimeException(e);
     }
     try {
+      cli.assertHeiIsCoveredByClientKey("bob.example.com", public1024);
+    } catch (AssertionFailedException e) {
+      throw new RuntimeException(e);
+    }
+    try {
       cli.assertHeiIsCoveredByCertificate("fred.example.com", cert1024);
+      fail("Exception expected, but not thrown.");
+    } catch (AssertionFailedException e) {
+      // Expected.
+    }
+    try {
+      cli.assertHeiIsCoveredByClientKey("fred.example.com", public1024);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
       // Expected.
@@ -128,7 +198,19 @@ public class ClientImplBasicTests extends TestBase {
       // Expected.
     }
     try {
+      cli.assertHeiIsCoveredByClientKey("unknown-hei-id", public1024);
+      fail("Exception expected, but not thrown.");
+    } catch (AssertionFailedException e) {
+      // Expected.
+    }
+    try {
       cli.assertHeiIsCoveredByCertificate("unknown-hei-id", cert512);
+      fail("Exception expected, but not thrown.");
+    } catch (AssertionFailedException e) {
+      // Expected.
+    }
+    try {
+      cli.assertHeiIsCoveredByClientKey("unknown-hei-id", public512);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
       // Expected.
@@ -136,7 +218,7 @@ public class ClientImplBasicTests extends TestBase {
   }
 
   @Test
-  public void testAssertHeisAreCoveredByCertificate() {
+  public void testAssertHeisAreCoveredByCertOrKey() {
     Collection<String> heiIds = new ArrayList<>();
     heiIds.add("john.example.com");
     try {
@@ -144,9 +226,20 @@ public class ClientImplBasicTests extends TestBase {
     } catch (AssertionFailedException e) {
       throw new RuntimeException(e);
     }
+    try {
+      cli.assertHeisAreCoveredByClientKey(heiIds, public1024);
+    } catch (AssertionFailedException e) {
+      throw new RuntimeException(e);
+    }
     heiIds.add("fred.example.com");
     try {
       cli.assertHeisAreCoveredByCertificate(heiIds, cert1024);
+      fail("Exception expected, but not thrown.");
+    } catch (AssertionFailedException e) {
+      // Expected.
+    }
+    try {
+      cli.assertHeisAreCoveredByClientKey(heiIds, public1024);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
       // Expected.
@@ -160,7 +253,18 @@ public class ClientImplBasicTests extends TestBase {
       throw new RuntimeException(e);
     }
     try {
+      cli.assertHeisAreCoveredByClientKey(new String[] { "john.example.com" }, public1024);
+    } catch (AssertionFailedException e) {
+      throw new RuntimeException(e);
+    }
+    try {
       cli.assertHeisAreCoveredByCertificate(new String[] { "john.example.com", "other" }, cert1024);
+      fail("Exception expected, but not thrown.");
+    } catch (AssertionFailedException e) {
+      // Expected.
+    }
+    try {
+      cli.assertHeisAreCoveredByClientKey(new String[] { "john.example.com", "other" }, public1024);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
       // Expected.
@@ -322,13 +426,20 @@ public class ClientImplBasicTests extends TestBase {
   }
 
   @Test
-  public void testGetHeisCoveredByCertificate() {
+  public void testGetHeisCoveredByCertOrKey() {
     assertThat(cli.getHeisCoveredByCertificate(cert512)).isEmpty();
+    assertThat(cli.getHeisCoveredByClientKey(public512)).isEmpty();
     assertThat(cli.getHeisCoveredByCertificate(cert1024))
+        .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "weird.example.com");
+    assertThat(cli.getHeisCoveredByClientKey(public1024))
         .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "weird.example.com");
     assertThat(cli.getHeisCoveredByCertificate(cert1536))
         .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "fred.example.com");
+    assertThat(cli.getHeisCoveredByClientKey(public1536))
+        .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "fred.example.com");
     assertThat(cli.getHeisCoveredByCertificate(cert2048))
+        .containsExactlyInAnyOrder("bob.example.com");
+    assertThat(cli.getHeisCoveredByClientKey(public2048))
         .containsExactlyInAnyOrder("bob.example.com");
 
     // Try to change it, expect to fail.
@@ -339,25 +450,42 @@ public class ClientImplBasicTests extends TestBase {
     } catch (UnsupportedOperationException e) {
       // Expected.
     }
+    try {
+      cli.getHeisCoveredByClientKey(public2048).add("other");
+      fail("Exception expected.");
+    } catch (UnsupportedOperationException e) {
+      // Expected.
+    }
     assertThat(cli.getHeisCoveredByCertificate(cert2048))
+        .containsExactlyInAnyOrder("bob.example.com");
+    assertThat(cli.getHeisCoveredByClientKey(public2048))
         .containsExactlyInAnyOrder("bob.example.com");
   }
 
   @Test
-  public void testIsCertificateKnown() {
+  public void testIsCertOrKeyKnown() {
     assertThat(cli.isCertificateKnown(cert512)).isFalse();
+    assertThat(cli.isClientKeyKnown(public512)).isFalse();
     assertThat(cli.isCertificateKnown(cert1024)).isTrue();
+    assertThat(cli.isClientKeyKnown(public1024)).isTrue();
     assertThat(cli.isCertificateKnown(cert1536)).isTrue();
+    assertThat(cli.isClientKeyKnown(public1536)).isTrue();
     assertThat(cli.isCertificateKnown(cert2048)).isTrue();
+    assertThat(cli.isClientKeyKnown(public2048)).isTrue();
   }
 
   @Test
-  public void testIsHeiCoveredByCertificate() {
+  public void testIsHeiCoveredByCertOrKey() {
     assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert512)).isFalse();
+    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public512)).isFalse();
     assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert1024)).isTrue();
+    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public1024)).isTrue();
     assertThat(cli.isHeiCoveredByCertificate("bob.example.com", cert1024)).isTrue();
+    assertThat(cli.isHeiCoveredByClientKey("bob.example.com", public1024)).isTrue();
     assertThat(cli.isHeiCoveredByCertificate("fred.example.com", cert1024)).isFalse();
+    assertThat(cli.isHeiCoveredByClientKey("fred.example.com", public1024)).isFalse();
     assertThat(cli.isHeiCoveredByCertificate("unknown-hei-id", cert1024)).isFalse();
+    assertThat(cli.isHeiCoveredByClientKey("unknown-hei-id", public1024)).isFalse();
   }
 
   @Test
@@ -392,6 +520,7 @@ public class ClientImplBasicTests extends TestBase {
 
       Set<String> exceptions = new HashSet<>();
       exceptions.add("testStalenessDetection");
+      exceptions.add("sanityTest");
 
       for (Method method : this.getClass().getDeclaredMethods()) {
         if (exceptions.contains(method.getName())) {

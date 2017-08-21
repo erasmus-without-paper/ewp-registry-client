@@ -1,6 +1,7 @@
 package eu.erasmuswithoutpaper.registryclient;
 
 import java.security.cert.Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Collection;
 import java.util.Date;
 
@@ -119,11 +120,11 @@ public interface RegistryClient extends AutoCloseable {
       "https://github.com/erasmus-without-paper/ewp-specs-api-registry/tree/stable-v1";
 
   /**
-   * Check if given set of HEIs is completely covered the given certificate.
+   * Check if given set of HEIs is completely covered by the given certificate.
    *
    * <p>
-   * In other words, check if each HEI on the list present on the list of HEIs covered by this
-   * certificate (the list may still contain other HEIs).
+   * In other words, check if each HEI on the list, is also present on the list of HEIs covered by
+   * this certificate (the latter list may still contain other HEIs too).
    * </p>
    *
    * @param heiIds the list HEI
@@ -153,6 +154,42 @@ public interface RegistryClient extends AutoCloseable {
       throws UnacceptableStalenessException;
 
   /**
+   * Check if given set of HEIs is completely covered by the given client key.
+   *
+   * <p>
+   * In other words, check if each HEI on the list, is also present on the list of HEIs covered by
+   * this client key (the latter list may still contain other HEIs too).
+   * </p>
+   *
+   * @param heiIds the list HEI
+   *        <a href='https://github.com/erasmus-without-paper/ewp-specs-api-registry#schac-ids'>
+   *        SCHAC ID</a>s that need to be covered.
+   * @param clientKey as in {@link #isClientKeyKnown(RSAPublicKey)}.
+   * @return <b>true</b> if all HEIs are covered by this client key, <b>false</b> if at least one of
+   *         them isn't, or if the client key is not known.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  boolean areHeisCoveredByClientKey(Collection<String> heiIds, RSAPublicKey clientKey)
+      throws UnacceptableStalenessException;
+
+  /**
+   * This is an alias of {@link #areHeisCoveredByClientKey(Collection, RSAPublicKey)}. It just takes
+   * <code>String[]</code> instead of a collection.
+   *
+   * @param heiIds an array of HEI SCHAC IDs that need to be covered.
+   * @param clientKey as in {@link #isClientKeyKnown(RSAPublicKey)}.
+   * @return <b>true</b> if all HEIs are covered by this client key, <b>false</b> if at least one of
+   *         them isn't, or if the client key is not known.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  boolean areHeisCoveredByClientKey(String[] heiIds, RSAPublicKey clientKey)
+      throws UnacceptableStalenessException;
+
+  /**
    * Performs the same action as described by {@link #isCertificateKnown(Certificate)}, but throws
    * an exception instead of returning booleans.
    *
@@ -163,6 +200,20 @@ public interface RegistryClient extends AutoCloseable {
    *         {@link UnacceptableStalenessException} for more information.
    */
   void assertCertificateIsKnown(Certificate clientCert)
+      throws AssertionFailedException, UnacceptableStalenessException;
+
+  /**
+   * Performs the same action as described by {@link #isClientKeyKnown(RSAPublicKey)}, but throws an
+   * exception instead of returning booleans.
+   *
+   * @param clientKey as in {@link #isClientKeyKnown(RSAPublicKey)}.
+   * @throws AssertionFailedException if this client key has not been listed in the Registry's
+   *         catalogue.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  void assertClientKeyIsKnown(RSAPublicKey clientKey)
       throws AssertionFailedException, UnacceptableStalenessException;
 
   /**
@@ -178,6 +229,21 @@ public interface RegistryClient extends AutoCloseable {
    *         {@link UnacceptableStalenessException} for more information.
    */
   void assertHeiIsCoveredByCertificate(String heiId, Certificate clientCert)
+      throws AssertionFailedException, UnacceptableStalenessException;
+
+  /**
+   * Performs the same action as described by {@link #isHeiCoveredByClientKey(String, RSAPublicKey)}
+   * , but throws an exception instead of returning booleans.
+   *
+   * @param heiId as in {@link #isHeiCoveredByClientKey(String, RSAPublicKey)}.
+   * @param clientKey as in {@link #isHeiCoveredByClientKey(String, RSAPublicKey)}.
+   * @throws AssertionFailedException if the HEI is not covered by this client key, or the client
+   *         key is not known.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  void assertHeiIsCoveredByClientKey(String heiId, RSAPublicKey clientKey)
       throws AssertionFailedException, UnacceptableStalenessException;
 
   /**
@@ -207,6 +273,37 @@ public interface RegistryClient extends AutoCloseable {
    *         {@link UnacceptableStalenessException} for more information.
    */
   void assertHeisAreCoveredByCertificate(String[] heiIds, Certificate clientCert)
+      throws AssertionFailedException, UnacceptableStalenessException;
+
+  /**
+   * Performs the same action as described by
+   * {@link #areHeisCoveredByClientKey(Collection, RSAPublicKey)}, but throws an exception instead
+   * of returning booleans.
+   *
+   * @param heiIds as in {@link #areHeisCoveredByClientKey(Collection, RSAPublicKey)}.
+   * @param clientKey as in {@link #areHeisCoveredByClientKey(Collection, RSAPublicKey)}.
+   * @throws AssertionFailedException if at least one of the HEIs is not covered by the client key,
+   *         or the client key is not known.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  void assertHeisAreCoveredByClientKey(Collection<String> heiIds, RSAPublicKey clientKey)
+      throws AssertionFailedException, UnacceptableStalenessException;
+
+  /**
+   * This is an alias of {@link #assertHeisAreCoveredByClientKey(Collection, RSAPublicKey)}. It just
+   * takes <code>String[]</code> instead of a collection.
+   *
+   * @param heiIds as in {@link #areHeisCoveredByClientKey(String[], RSAPublicKey)}.
+   * @param clientKey as in {@link #areHeisCoveredByClientKey(String[], RSAPublicKey)}.
+   * @throws AssertionFailedException if at least one of the HEIs is not covered by the client key,
+   *         or the client key is not known.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  void assertHeisAreCoveredByClientKey(String[] heiIds, RSAPublicKey clientKey)
       throws AssertionFailedException, UnacceptableStalenessException;
 
   /**
@@ -412,6 +509,26 @@ public interface RegistryClient extends AutoCloseable {
       throws UnacceptableStalenessException;
 
   /**
+   * Retrieve a list of HEIs covered by the given client key.
+   *
+   * <p>
+   * Please note, that this list <b>will also be empty if the client key is unknown</b>. Use
+   * {@link #assertClientKeyIsKnown(RSAPublicKey)} if you need to differentiate between these two
+   * scenarios.
+   * </p>
+   *
+   * @param clientKey as in {@link #isClientKeyKnown(RSAPublicKey)}.
+   * @return A list of HEI
+   *         <a href='https://github.com/erasmus-without-paper/ewp-specs-api-registry#schac-ids'>
+   *         SCHAC ID</a>s. May be empty.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  Collection<String> getHeisCoveredByClientKey(RSAPublicKey clientKey)
+      throws UnacceptableStalenessException;
+
+  /**
    * Check if a given client certificate is present in the Registry's catalogue.
    *
    * <p>
@@ -431,6 +548,26 @@ public interface RegistryClient extends AutoCloseable {
    */
   boolean isCertificateKnown(Certificate clientCert) throws UnacceptableStalenessException;
 
+  /**
+   * Check if a given client key is present in the Registry's catalogue.
+   *
+   * <p>
+   * You can use this method when you are developing an EWP API endpoint, and you want to make sure
+   * that it will be accessible only to the requesters within the EWP Network.
+   * </p>
+   *
+   * @param clientKey a <b>valid</b> client public key (if it's not valid, you'll get
+   *        RuntimeExceptions). Most often, this will be the public key which the requester has used
+   *        in his request's HTTP signature).
+   * @return <b>true</b> if this client key belongs to someone from the EWP Network.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException}.
+   * @since 1.4.0
+   *
+   * @see #getHeisCoveredByClientKey(RSAPublicKey)
+   * @see #isHeiCoveredByClientKey(String, RSAPublicKey)
+   */
+  boolean isClientKeyKnown(RSAPublicKey clientKey) throws UnacceptableStalenessException;
 
   /**
    * Check if a given HEI is covered by a given client certificate.
@@ -446,6 +583,23 @@ public interface RegistryClient extends AutoCloseable {
    *         {@link UnacceptableStalenessException} for more information.
    */
   boolean isHeiCoveredByCertificate(String heiId, Certificate clientCert)
+      throws UnacceptableStalenessException;
+
+  /**
+   * Check if a given HEI is covered by a given client key.
+   *
+   * @param heiId
+   *        <a href='https://github.com/erasmus-without-paper/ewp-specs-api-registry#schac-ids'>
+   *        SCHAC ID</a> of the HEI. If you do not know the HEI's SCHAC ID, you may attempt to find
+   *        it with the help of {@link #findHeiId(String, String)} method.
+   * @param clientKey as in {@link #isClientKeyKnown(RSAPublicKey)}.
+   * @return <b>true</b> if the client key is known, and HEI is covered by it. <b>False</b>
+   *         otherwise.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.4.0
+   */
+  boolean isHeiCoveredByClientKey(String heiId, RSAPublicKey clientKey)
       throws UnacceptableStalenessException;
 
   /**

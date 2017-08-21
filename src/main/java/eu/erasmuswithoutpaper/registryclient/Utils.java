@@ -1,10 +1,17 @@
 package eu.erasmuswithoutpaper.registryclient;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.RandomAccess;
 
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -72,6 +79,34 @@ class Utils {
    */
   static List<? extends Node> asNodeList(NodeList list) {
     return list.getLength() == 0 ? Collections.<Node>emptyList() : new NodeListWrapper(list);
+  }
+
+  static String extractFingerprint(Certificate cert) {
+    MessageDigest md;
+    try {
+      md = MessageDigest.getInstance("SHA-256");
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
+    try {
+      md.update(cert.getEncoded());
+    } catch (CertificateEncodingException e) {
+      throw new RuntimeException(e);
+    }
+    byte[] binDigest = md.digest();
+    return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
+  }
+
+  static String extractFingerprint(RSAPublicKey clientKey) {
+    MessageDigest md;
+    try {
+      md = MessageDigest.getInstance("SHA-256");
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
+    md.update(clientKey.getEncoded());
+    byte[] binDigest = md.digest();
+    return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
   }
 
   /**

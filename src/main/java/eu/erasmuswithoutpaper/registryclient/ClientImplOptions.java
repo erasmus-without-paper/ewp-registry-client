@@ -45,18 +45,41 @@ public class ClientImplOptions {
     return this.isAutoRefreshing();
   }
 
+  /**
+   * @return The {@link CatalogueFetcher} instance which will be used by the client. See
+   *         {@link #setCatalogueFetcher(CatalogueFetcher)}.
+   */
   public CatalogueFetcher getCatalogueFetcher() {
     return this.catalogueFetcher;
   }
 
+  /**
+   * @return The maximum staleness to be tolerated. See {@link #setMaxAcceptableStaleness(long)}.
+   */
   public long getMaxAcceptableStaleness() {
     return this.maxAcceptableStaleness;
   }
 
+  /**
+   * @return The minimum time between Registry queries. See {@link #setMinTimeBetweenQueries(long)}.
+   */
   public long getMinTimeBetweenQueries() {
     return this.minTimeBetweenQueries;
   }
 
+  /**
+   * @return The cache instance to be used. See {@link #setPersistentCacheMap(Map)}.
+   * @since 1.4.0
+   */
+  public Map<String, byte[]> getPersistentCacheMap() {
+    return this.persistentCacheMap;
+  }
+
+  /**
+   * @return The cache instance to be used. See {@link #setPersistentCacheMap(Map)}.
+   * @deprecated As of release 1.4.0, replaced by {@link #getPersistentCacheMap()}.
+   */
+  @Deprecated
   public Map<String, byte[]> getPersistentCacheProvider() {
     return this.persistentCacheMap;
   }
@@ -71,6 +94,10 @@ public class ClientImplOptions {
     return Math.min(this.getMaxAcceptableStaleness() / 4, 86400000);
   }
 
+  /**
+   * @return Time to wait between retries when no valid result is receives. See
+   *         {@link #setTimeBetweenRetries(long)}.
+   */
   public long getTimeBetweenRetries() {
     return this.timeBetweenRetries;
   }

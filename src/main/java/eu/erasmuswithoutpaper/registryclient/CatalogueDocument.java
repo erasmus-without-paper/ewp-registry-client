@@ -2,10 +2,8 @@ package eu.erasmuswithoutpaper.registryclient;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +16,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPath;
@@ -50,22 +47,6 @@ class CatalogueDocument {
     CatalogueParserException(String message, Exception cause) {
       super(message, cause);
     }
-  }
-
-  private static String extractFingerprint(Certificate cert) {
-    MessageDigest md;
-    try {
-      md = MessageDigest.getInstance("SHA-256");
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
-    }
-    try {
-      md.update(cert.getEncoded());
-    } catch (CertificateEncodingException e) {
-      throw new RuntimeException(e);
-    }
-    byte[] binDigest = md.digest();
-    return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
   }
 
   private static String getApiIndexKey(String namespaceUri, String localName) {
@@ -158,6 +139,8 @@ class CatalogueDocument {
    * </p>
    */
   private final Map<String, Set<String>> certHeis;
+
+  private final Map<String, Set<String>> cliKeyHeis;
 
   /**
    * "Host Element -> heiIds" index for {@link #doc}.
@@ -291,6 +274,7 @@ class CatalogueDocument {
     });
 
     this.certHeis = new HashMap<>();
+    this.cliKeyHeis = new HashMap<>();
     this.hostHeis = new HashMap<>();
     this.heiIdMaps = new HashMap<>();
     this.apiIndex = new HashMap<>();
@@ -311,6 +295,22 @@ class CatalogueDocument {
         }
         for (Element heiIdElem : Utils.asElementList((NodeList) xpath
             .evaluate("../../r:institutions-covered/r:hei-id", certElem, XPathConstants.NODESET))) {
+          coveredHeis.add(heiIdElem.getTextContent());
+        }
+      }
+      for (Element cliKeyElem : Utils.asElementList((NodeList) xpath.evaluate(
+          "r:host/r:client-credentials-in-use/r:rsa-public-key", root, XPathConstants.NODESET))) {
+        String fingerprint = cliKeyElem.getAttribute("sha-256");
+        Set<String> coveredHeis;
+        if (this.cliKeyHeis.containsKey(fingerprint)) {
+          coveredHeis = this.cliKeyHeis.get(fingerprint);
+        } else {
+          coveredHeis = new HashSet<String>();
+          this.cliKeyHeis.put(fingerprint, coveredHeis);
+        }
+        for (Element heiIdElem : Utils
+            .asElementList((NodeList) xpath.evaluate("../../r:institutions-covered/r:hei-id",
+                cliKeyElem, XPathConstants.NODESET))) {
           coveredHeis.add(heiIdElem.getTextContent());
         }
       }
@@ -586,8 +586,17 @@ class CatalogueDocument {
    * this particular version of the catalogue document.
    */
   Collection<String> getHeisCoveredByCertificate(Certificate clientCert) {
-    String fingerprint = extractFingerprint(clientCert);
+    String fingerprint = Utils.extractFingerprint(clientCert);
     Set<String> heis = this.certHeis.get(fingerprint);
+    if (heis == null) {
+      heis = new HashSet<>();
+    }
+    return Collections.unmodifiableSet(heis);
+  }
+
+  Collection<String> getHeisCoveredByClientKey(RSAPublicKey clientKey) {
+    String fingerprint = Utils.extractFingerprint(clientKey);
+    Set<String> heis = this.cliKeyHeis.get(fingerprint);
     if (heis == null) {
       heis = new HashSet<>();
     }
@@ -599,7 +608,12 @@ class CatalogueDocument {
    * particular version of the catalogue document.
    */
   boolean isCertificateKnown(Certificate clientCert) {
-    String fingerprint = extractFingerprint(clientCert);
+    String fingerprint = Utils.extractFingerprint(clientCert);
     return this.certHeis.containsKey(fingerprint);
+  }
+
+  boolean isClientKeyKnown(RSAPublicKey clientKey) {
+    String fingerprint = Utils.extractFingerprint(clientKey);
+    return this.cliKeyHeis.containsKey(fingerprint);
   }
 }

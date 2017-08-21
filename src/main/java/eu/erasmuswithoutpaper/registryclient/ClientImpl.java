@@ -3,6 +3,7 @@ package eu.erasmuswithoutpaper.registryclient;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -137,7 +138,7 @@ public class ClientImpl implements RegistryClient {
      * directly from it.
      */
 
-    Map<String, byte[]> cache = this.options.getPersistentCacheProvider();
+    Map<String, byte[]> cache = this.options.getPersistentCacheMap();
     if (cache != null) {
       logger.debug("Attempting to load a catalogue from cache");
       byte[] data = cache.get(CATALOGUE_CACHE_KEY);
@@ -252,10 +253,36 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public boolean areHeisCoveredByClientKey(Collection<String> heiIds, RSAPublicKey clientKey)
+      throws UnacceptableStalenessException {
+    return this.getHeisCoveredByClientKey(clientKey).containsAll(heiIds);
+  }
+
+  @Override
+  public boolean areHeisCoveredByClientKey(String[] heiIds, RSAPublicKey clientKey)
+      throws UnacceptableStalenessException {
+    Collection<String> heis = this.getHeisCoveredByClientKey(clientKey);
+    for (String heiId : heiIds) {
+      if (!heis.contains(heiId)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
   public void assertCertificateIsKnown(Certificate clientCert) throws AssertionFailedException {
     if (!this.isCertificateKnown(clientCert)) {
+      throw new AssertionFailedException("Certificate was not recognized as a known EWP Client: "
+          + Utils.extractFingerprint(clientCert));
+    }
+  }
+
+  @Override
+  public void assertClientKeyIsKnown(RSAPublicKey clientKey) throws AssertionFailedException {
+    if (!this.isClientKeyKnown(clientKey)) {
       throw new AssertionFailedException(
-          "Certificate was not recognized as a known EWP Client: " + clientCert.toString());
+          "Key was not recognized as a known EWP Client: " + Utils.extractFingerprint(clientKey));
     }
   }
 
@@ -264,6 +291,14 @@ public class ClientImpl implements RegistryClient {
       throws AssertionFailedException {
     if (!this.isHeiCoveredByCertificate(heiId, clientCert)) {
       throw new AssertionFailedException("HEI " + heiId + " is not covered by this certificate.");
+    }
+  }
+
+  @Override
+  public void assertHeiIsCoveredByClientKey(String heiId, RSAPublicKey clientKey)
+      throws AssertionFailedException {
+    if (!this.isHeiCoveredByClientKey(heiId, clientKey)) {
+      throw new AssertionFailedException("HEI " + heiId + " is not covered by this client key.");
     }
   }
 
@@ -280,6 +315,22 @@ public class ClientImpl implements RegistryClient {
       throws AssertionFailedException {
     if (!this.areHeisCoveredByCertificate(heiIds, clientCert)) {
       throw new AssertionFailedException("Some of the HEIs are not covered by this certificate.");
+    }
+  }
+
+  @Override
+  public void assertHeisAreCoveredByClientKey(Collection<String> heiIds, RSAPublicKey clientKey)
+      throws AssertionFailedException {
+    if (!this.areHeisCoveredByClientKey(heiIds, clientKey)) {
+      throw new AssertionFailedException("Some of the HEIs are not covered by this client key.");
+    }
+  }
+
+  @Override
+  public void assertHeisAreCoveredByClientKey(String[] heiIds, RSAPublicKey clientKey)
+      throws AssertionFailedException, UnacceptableStalenessException {
+    if (!this.areHeisCoveredByClientKey(heiIds, clientKey)) {
+      throw new AssertionFailedException("Some of the HEIs are not covered by this client key.");
     }
   }
 
@@ -365,6 +416,14 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public Collection<String> getHeisCoveredByClientKey(RSAPublicKey clientKey)
+      throws UnacceptableStalenessException {
+    // Since expiry date can only be extended, there is no need to synchronize.
+    this.assertAcceptableStaleness();
+    return this.doc.getHeisCoveredByClientKey(clientKey);
+  }
+
+  @Override
   public boolean isCertificateKnown(Certificate clientCert) {
     // Since expiry date can only be extended, there is no need to synchronize.
     this.assertAcceptableStaleness();
@@ -372,10 +431,25 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public boolean isClientKeyKnown(RSAPublicKey clientKey) throws UnacceptableStalenessException {
+    // Since expiry date can only be extended, there is no need to synchronize.
+    this.assertAcceptableStaleness();
+    return this.doc.isClientKeyKnown(clientKey);
+  }
+
+  @Override
   public boolean isHeiCoveredByCertificate(String heiId, Certificate clientCert) {
     // Since expiry date can only be extended, there is no need to synchronize.
     this.assertAcceptableStaleness();
     return this.areHeisCoveredByCertificate(new String[] { heiId }, clientCert);
+  }
+
+  @Override
+  public boolean isHeiCoveredByClientKey(String heiId, RSAPublicKey clientKey)
+      throws UnacceptableStalenessException {
+    // Since expiry date can only be extended, there is no need to synchronize.
+    this.assertAcceptableStaleness();
+    return this.areHeisCoveredByClientKey(new String[] { heiId }, clientKey);
   }
 
   @Override
@@ -407,7 +481,7 @@ public class ClientImpl implements RegistryClient {
       logger.info("Extending the expiry date of our catalogue copy: " + someResponse.getExpires());
       this.doc.extendExpiryDate(someResponse.getExpires());
 
-      Map<String, byte[]> cache = this.options.getPersistentCacheProvider();
+      Map<String, byte[]> cache = this.options.getPersistentCacheMap();
       if (cache != null) {
         logger.trace("Trying to extend the expiry date of the cached copy too...");
         byte[] data = cache.get(CATALOGUE_CACHE_KEY);
@@ -449,7 +523,7 @@ public class ClientImpl implements RegistryClient {
 
       // Also store the new response in persistent cache (if we have one).
 
-      Map<String, byte[]> cache = this.options.getPersistentCacheProvider();
+      Map<String, byte[]> cache = this.options.getPersistentCacheMap();
       if (cache != null) {
         logger.trace("Storing the new copy to cache...");
         cache.put(CATALOGUE_CACHE_KEY, response.serialize());
