@@ -2,6 +2,7 @@
     xmlns="https://github.com/erasmus-without-paper/ewp-specs-api-registry/tree/stable-v1"
     xmlns:d4="https://github.com/erasmus-without-paper/ewp-specs-api-discovery/blob/stable-v4/manifest-entry.xsd"
     xmlns:e2="https://github.com/erasmus-without-paper/ewp-specs-api-echo/blob/stable-v2/manifest-entry.xsd"
+    xmlns:sec="https://github.com/erasmus-without-paper/ewp-specs-sec-intro/tree/stable-v2"
     xmlns:ewp="https://github.com/erasmus-without-paper/ewp-specs-architecture/blob/stable-v1/common-types.xsd"
     xmlns:r1="https://github.com/erasmus-without-paper/ewp-specs-api-registry/blob/stable-v1/manifest-entry.xsd"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -20,6 +21,9 @@
 
         https://github.com/erasmus-without-paper/ewp-specs-api-registry/blob/stable-v1/manifest-entry.xsd
         https://raw.githubusercontent.com/erasmus-without-paper/ewp-specs-api-registry/stable-v1/manifest-entry.xsd
+
+        https://github.com/erasmus-without-paper/ewp-specs-sec-intro/tree/stable-v2
+        https://raw.githubusercontent.com/erasmus-without-paper/ewp-specs-sec-intro/stable-v2/schema.xsd
     "
 >
     <host>
@@ -42,9 +46,22 @@
             <d4:discovery version="4.1.0">
                 <d4:url>https://bob.example.com/manifest.xml</d4:url>
             </d4:discovery>
-            <e2:echo version="2.1.3">
+            <e2:echo version="2.1.3"> <!-- api1 -->
                 <ewp:admin-email>old-echo-developer@bob.example.com</ewp:admin-email>
                 <ewp:admin-notes>Older version of echo.</ewp:admin-notes>
+                <e2:http-security>
+                    <sec:client-auth-methods>
+                        <tlscert
+                            xmlns="https://github.com/erasmus-without-paper/ewp-specs-sec-cliauth-tlscert/tree/stable-v1"
+                            allows-self-signed="true"
+                        />
+                        <httpsig xmlns="https://github.com/erasmus-without-paper/ewp-specs-sec-cliauth-httpsig/tree/stable-v1"/>
+                    </sec:client-auth-methods>
+                    <sec:server-auth-methods>
+                        <tlscert xmlns="https://github.com/erasmus-without-paper/ewp-specs-sec-srvauth-tlscert/tree/stable-v1"/>
+                        <httpsig xmlns="https://github.com/erasmus-without-paper/ewp-specs-sec-srvauth-httpsig/tree/stable-v1"/>
+                    </sec:server-auth-methods>
+                </e2:http-security>
                 <e2:url>https://bob.example.com/old-echo</e2:url>
             </e2:echo>
             <e2:echo version="2.1.17">
@@ -61,12 +78,15 @@
             <certificate sha-256="19fdd48a85595958035a1a42da8065709a585f78cc01b4df428f68eab39b9dda"/> <!-- 2048 -->
             <rsa-public-key sha-256="2e06b1d53a1b7e2c54377d44a4f6893761421e196bb83ad90932d95512c967d1"/> <!-- 2048 -->
         </client-credentials-in-use>
+        <server-credentials-in-use>
+            <rsa-public-key sha-256="a29969edd0d04f22bf19db9e417b181c63928accdc58ecf3ac662e51d8497791"/> <!-- 512 -->
+        </server-credentials-in-use>
     </host>
 
     <host>
         <ewp:admin-email>john@john.example.com</ewp:admin-email>
         <apis-implemented>
-            <other-api version="1.1.5" xmlns="urn:other">
+            <other-api version="1.1.5" xmlns="urn:other"> <!-- api2 -->
                 <url>https://john.example.com/new-other</url>
                 <the-element/>
             </other-api>
@@ -81,11 +101,15 @@
             <rsa-public-key sha-256="eb7ab845698d1294a9f1754f2eaa0975c9d9454f183d99122c71ae9e7acd518e"/> <!-- 1536 -->
             <rsa-public-key sha-256="4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b"/> <!-- 1024 -->
         </client-credentials-in-use>
+        <server-credentials-in-use>
+            <rsa-public-key sha-256="eb7ab845698d1294a9f1754f2eaa0975c9d9454f183d99122c71ae9e7acd518e"/> <!-- 1536 -->
+            <rsa-public-key sha-256="4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b"/> <!-- 1024 -->
+        </server-credentials-in-use>
     </host>
 
     <host>
         <apis-implemented>
-            <other-api version="1.1.7" xmlns="urn:other">
+            <other-api version="1.1.7" xmlns="urn:other"> <!-- api4 -->
                 <url>https://example.com/super-other</url>
                 <nested>
                     <prop>val</prop>
@@ -115,10 +139,13 @@
     <host>
         <apis-implemented>
             <standalone xmlns="urn:bla" version="1.1.6seriously non-semantic"/>
-            <standalone2 xmlns="urn:bla" version="3.5.7"/>
+            <standalone2 xmlns="urn:bla" version="3.5.7"/> <!-- api3 -->
             <standalone3 xmlns="urn:bla" version="1.2.3"/>
             <standalone3 xmlns="urn:bla"/>
         </apis-implemented>
+        <server-credentials-in-use>
+            <rsa-public-key sha-256="4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b"/> <!-- 1024 -->
+        </server-credentials-in-use>
     </host>
 
     <institutions>

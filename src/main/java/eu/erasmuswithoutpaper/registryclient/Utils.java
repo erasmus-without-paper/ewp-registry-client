@@ -97,14 +97,14 @@ class Utils {
     return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
   }
 
-  static String extractFingerprint(RSAPublicKey clientKey) {
+  static String extractFingerprint(RSAPublicKey publicKey) {
     MessageDigest md;
     try {
       md = MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
-    md.update(clientKey.getEncoded());
+    md.update(publicKey.getEncoded());
     byte[] binDigest = md.digest();
     return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
   }

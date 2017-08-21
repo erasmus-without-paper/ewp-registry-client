@@ -24,6 +24,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.Http200RegistryResponse;
+import eu.erasmuswithoutpaper.registryclient.RegistryClient.InvalidApiEntryElement;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.RegistryClientException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -38,6 +39,23 @@ import org.xml.sax.SAXException;
 @SuppressFBWarnings("SIC_INNER_SHOULD_BE_STATIC_ANON")
 class CatalogueDocument {
 
+  /**
+   * Instances of this class get attached to the Elements returned by
+   * {@link CatalogueDocument#findApis(ApiSearchConditions)} and
+   * {@link CatalogueDocument#findApi(ApiSearchConditions)} methods.
+   */
+  private static class InternalApiEntryAttachment {
+
+    /**
+     * The parent <code>&lt;host&gt;</code> element which this API entry has been cloned from.
+     */
+    private final Element host;
+
+    private InternalApiEntryAttachment(Element host) {
+      this.host = host;
+    }
+  }
+
   @SuppressWarnings({ "serial" })
   static class CatalogueParserException extends RegistryClientException {
     CatalogueParserException(String message) {
@@ -48,6 +66,11 @@ class CatalogueDocument {
       super(message, cause);
     }
   }
+
+  /**
+   * The key which we use to attach internal objects onto the DOM Elements we expose outside.
+   */
+  private static final String INTERNAL_USERDATA_KEY = "59a03da6-2456-4be1-9d21-13dc0df41978";
 
   private static String getApiIndexKey(String namespaceUri, String localName) {
     return "{" + namespaceUri + "}" + localName;
@@ -156,6 +179,21 @@ class CatalogueDocument {
    * </p>
    */
   private final Map<Element, Set<String>> hostHeis;
+
+  /**
+   * "Host Element -> rsa-server-key fingerprints" index for {@link #doc}.
+   *
+   * <p>
+   * For each <code>&lt;host&gt;</code> element in the catalogue, a set of rsa-server-key
+   * fingerprints covering this host (can be empty).
+   * </p>
+   *
+   * <p>
+   * This field is final, but its data is still mutable (and thus, not thread-safe). Unmodifiable
+   * views need to be used before its values are exposed outside.
+   * </p>
+   */
+  private final Map<Element, Set<String>> hostServerKeys;
 
   /**
    * "HEI other-id type -> other-id value -> heiId" index for {@link #doc}.
@@ -276,6 +314,7 @@ class CatalogueDocument {
     this.certHeis = new HashMap<>();
     this.cliKeyHeis = new HashMap<>();
     this.hostHeis = new HashMap<>();
+    this.hostServerKeys = new HashMap<>();
     this.heiIdMaps = new HashMap<>();
     this.apiIndex = new HashMap<>();
     this.heiEntries = new HashMap<>();
@@ -359,11 +398,33 @@ class CatalogueDocument {
           String heiId = heiIdElem.getTextContent();
           heis.add(heiId);
         }
+        Set<String> keys = new HashSet<>();
+        this.hostServerKeys.put(hostElem, keys);
+        for (Element keyElem : Utils
+            .asElementList((NodeList) xpath.evaluate("r:server-credentials-in-use/r:rsa-public-key",
+                hostElem, XPathConstants.NODESET))) {
+          String fingerprint = keyElem.getAttribute("sha-256");
+          keys.add(fingerprint);
+        }
       }
 
     } catch (XPathExpressionException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public boolean isApiCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
+      throws InvalidApiEntryElement {
+    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
+    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
+      throw new InvalidApiEntryElement();
+    }
+    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
+    if (!this.hostServerKeys.containsKey(meta.host)) {
+      // The host of this API doesn't have *any* server keys.
+      return false;
+    }
+    return this.hostServerKeys.get(meta.host).contains(Utils.extractFingerprint(serverKey));
   }
 
   @Override
@@ -458,6 +519,8 @@ class CatalogueDocument {
         if (this.doesElementMatchConditions(elem, conditions)) {
           // Create a copy of the element, so that it's thread-safe.
           Element clone = (Element) elem.cloneNode(true);
+          clone.setUserData(INTERNAL_USERDATA_KEY,
+              new InternalApiEntryAttachment((Element) elem.getParentNode().getParentNode()), null);
           results.add(clone);
         }
       }

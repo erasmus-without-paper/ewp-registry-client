@@ -37,6 +37,26 @@ public interface RegistryClient extends AutoCloseable {
   }
 
   /**
+   * Thrown whenever an invalid API-entry Element has been passed to one of the
+   * {@link RegistryClient}'s methods. Make sure that you are using an Element which you have gotten
+   * from one of the other {@link RegistryClient}'s methods, such as
+   * {@link RegistryClient#findApi(ApiSearchConditions)}.
+   *
+   * @since 1.4.0
+   */
+  @SuppressWarnings("serial")
+  class InvalidApiEntryElement extends RegistryClientRuntimeException {
+
+    public InvalidApiEntryElement() {
+      super();
+    }
+
+    public InvalidApiEntryElement(RuntimeException cause) {
+      super(cause);
+    }
+  }
+
+  /**
    * Thrown by {@link RegistryClient#refresh()} when the catalogue refreshing fails for some reason.
    *
    * @since 1.0.0
@@ -85,6 +105,14 @@ public interface RegistryClient extends AutoCloseable {
    */
   @SuppressWarnings("serial")
   abstract class RegistryClientRuntimeException extends RuntimeException {
+
+    public RegistryClientRuntimeException() {
+      super();
+    }
+
+    public RegistryClientRuntimeException(RuntimeException cause) {
+      super(cause);
+    }
   }
 
   /**
@@ -527,6 +555,23 @@ public interface RegistryClient extends AutoCloseable {
    */
   Collection<String> getHeisCoveredByClientKey(RSAPublicKey clientKey)
       throws UnacceptableStalenessException;
+
+  /**
+   * Check if a given API is covered by a given server key.
+   *
+   * @param apiElement The catalogue {@link Element} which describes the said API. This MUST be the
+   *        same element which you have previously gotten from {@link #findApi(ApiSearchConditions)}
+   *        or {@link #findApis(ApiSearchConditions)} method.
+   * @param serverKey The key which you want to check (if the API is indeed covered by this key).
+   * @return <b>true</b> if this API is indeed covered by this server key, <b>false</b> otherwise.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @throws InvalidApiEntryElement if the <b>apiElement</b> you have provided doesn't seem to be a
+   *         valid one (the one which has been produced by this {@link RegistryClient}).
+   * @since 1.4.0
+   */
+  boolean isApiCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
+      throws UnacceptableStalenessException, InvalidApiEntryElement;
 
   /**
    * Check if a given client certificate is present in the Registry's catalogue.

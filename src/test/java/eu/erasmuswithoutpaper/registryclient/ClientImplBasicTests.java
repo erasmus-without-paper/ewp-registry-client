@@ -19,6 +19,9 @@ import eu.erasmuswithoutpaper.registryclient.RegistryClient.AssertionFailedExcep
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.RefreshFailureException;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenessException;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
+import org.assertj.core.util.Lists;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -460,6 +463,73 @@ public class ClientImplBasicTests extends TestBase {
         .containsExactlyInAnyOrder("bob.example.com");
     assertThat(cli.getHeisCoveredByClientKey(public2048))
         .containsExactlyInAnyOrder("bob.example.com");
+  }
+
+  @Test
+  public void testIsApiCoveredByServerKey() {
+
+    // First, find some *specific* API entry elements.
+
+    ApiSearchConditions conds = new ApiSearchConditions();
+    String e2 =
+        "https://github.com/erasmus-without-paper/ewp-specs-api-echo/blob/stable-v2/manifest-entry.xsd";
+    conds.setApiClassRequired(e2, "echo");
+    conds.setMinVersionRequired("2.1.3");
+    conds.setRequiredHei("bob.example.com");
+    Collection<Element> apis = cli.findApis(conds);
+    // There are two APIs matching these conditions. We want the 2.1.3 one (just for clarity).
+    CollectionUtils.filter(apis, new Predicate<Element>() {
+      @Override
+      public boolean evaluate(Element obj) {
+        return obj.getAttribute("version").equals("2.1.3");
+      }
+    });
+    assertThat(apis).hasSize(1);
+    Element api1 = Lists.newArrayList(apis).get(0);
+
+    conds.setApiClassRequired("urn:other", "other-api");
+    conds.setMinVersionRequired("1.1.5");
+    conds.setRequiredHei("bob.example.com");
+    apis = cli.findApis(conds);
+    assertThat(apis).hasSize(1);
+    Element api2 = Lists.newArrayList(apis).get(0);
+
+    conds.setApiClassRequired("urn:bla", "standalone2");
+    conds.setMinVersionRequired("3.5.7");
+    conds.setRequiredHei(null);
+    apis = cli.findApis(conds);
+    assertThat(apis).hasSize(1);
+    Element api3 = Lists.newArrayList(apis).get(0);
+
+    conds.setApiClassRequired("urn:other", "other-api");
+    conds.setMinVersionRequired("1.1.7");
+    conds.setRequiredHei("fred.example.com");
+    apis = cli.findApis(conds);
+    assertThat(apis).hasSize(1);
+    Element api4 = Lists.newArrayList(apis).get(0);
+
+    // All above APIs were marked with a comment in the catalogue file.
+    // Test if the results match what is expected (see catalogue file).
+
+    assertThat(cli.isApiCoveredByServerKey(api1, public512)).isTrue();
+    assertThat(cli.isApiCoveredByServerKey(api1, public1024)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api1, public1536)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api1, public2048)).isFalse();
+
+    assertThat(cli.isApiCoveredByServerKey(api2, public512)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api2, public1024)).isTrue();
+    assertThat(cli.isApiCoveredByServerKey(api2, public1536)).isTrue();
+    assertThat(cli.isApiCoveredByServerKey(api2, public2048)).isFalse();
+
+    assertThat(cli.isApiCoveredByServerKey(api3, public512)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api3, public1024)).isTrue();
+    assertThat(cli.isApiCoveredByServerKey(api3, public1536)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api3, public2048)).isFalse();
+
+    assertThat(cli.isApiCoveredByServerKey(api4, public512)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api4, public1024)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api4, public1536)).isFalse();
+    assertThat(cli.isApiCoveredByServerKey(api4, public2048)).isFalse();
   }
 
   @Test

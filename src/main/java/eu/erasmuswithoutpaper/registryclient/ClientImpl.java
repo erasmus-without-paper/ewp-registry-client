@@ -424,6 +424,13 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public boolean isApiCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
+      throws UnacceptableStalenessException, InvalidApiEntryElement {
+    this.assertAcceptableStaleness();
+    return this.doc.isApiCoveredByServerKey(apiElement, serverKey);
+  }
+
+  @Override
   public boolean isCertificateKnown(Certificate clientCert) {
     // Since expiry date can only be extended, there is no need to synchronize.
     this.assertAcceptableStaleness();
