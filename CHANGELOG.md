@@ -2,6 +2,39 @@ Release notes
 =============
 
 
+1.4.0
+-----
+
+*Released on 2017-08-22*
+
+ * Added support for new Registry API features, introduced in [Registry API
+   v1.2.0](https://github.com/erasmus-without-paper/ewp-specs-api-registry/blob/v1.2.0/CHANGELOG.md).
+
+   New methods were added to `RegistryClient` interface (and its default
+   `ClientImpl` implementation):
+
+   - An entire "family" of methods supporting client's RSA keys. These methods
+     have very similar signatures to the existing methods which support client
+     certificates (and they work in the same way):
+
+     - `areHeisCoveredByClientKey`
+     - `assertClientKeyIsKnown`
+     - `assertHeiIsCoveredByClientKey`
+     - `assertHeisAreCoveredByClientKey`
+     - `getHeisCoveredByClientKey`
+     - `isClientKeyKnown`
+     - `isHeiCoveredByClientKey`
+
+   - A single new method supporting server's RSA keys:
+
+     - `isApiCoveredByServerKey`
+
+ * `ClientImplOptions.getPersistentCacheProvider` was deprecated in favor of
+   the newly introduced alias `getPersistentCacheMap`.
+
+ * Minor spelling fixes in the documentation.
+
+
 1.3.1
 -----
 
