@@ -271,6 +271,16 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public void assertApiIsCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
+      throws AssertionFailedException, InvalidApiEntryElement, UnacceptableStalenessException {
+    if (!this.isApiCoveredByServerKey(apiElement, serverKey)) {
+      throw new AssertionFailedException(
+          "API entry " + apiElement.toString() + " doesn't seem to be covered by this server key: "
+              + Utils.extractFingerprint(serverKey));
+    }
+  }
+
+  @Override
   public void assertCertificateIsKnown(Certificate clientCert) throws AssertionFailedException {
     if (!this.isCertificateKnown(clientCert)) {
       throw new AssertionFailedException("Certificate was not recognized as a known EWP Client: "

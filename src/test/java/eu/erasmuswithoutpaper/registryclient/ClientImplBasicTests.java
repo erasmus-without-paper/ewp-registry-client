@@ -145,6 +145,33 @@ public class ClientImplBasicTests extends TestBase {
   }
 
   @Test
+  public void testAssertApiIsCoveredByServerKey() {
+
+    // Based on a section of #testIsApiCoveredByServerKey.
+
+    ApiSearchConditions conds = new ApiSearchConditions();
+    conds.setApiClassRequired("urn:other", "other-api");
+    conds.setMinVersionRequired("1.1.5");
+    conds.setRequiredHei("bob.example.com");
+    Collection<Element> apis = cli.findApis(conds);
+    assertThat(apis).hasSize(1);
+    Element api2 = Lists.newArrayList(apis).get(0);
+
+    try {
+      cli.assertApiIsCoveredByServerKey(api2, public512);
+      fail("Exception expected, but not thrown.");
+    } catch (AssertionFailedException e) {
+      assertThat(e).hasMessageContaining("doesn't seem to be covered by this server key");
+    }
+
+    try {
+      cli.assertApiIsCoveredByServerKey(api2, public1024);
+    } catch (AssertionFailedException e) {
+      fail("Exception not expected, but thrown.", e);
+    }
+  }
+
+  @Test
   public void testAssertCertOrKeyIsKnown() {
     try {
       cli.assertCertificateIsKnown(cert512);

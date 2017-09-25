@@ -218,6 +218,22 @@ public interface RegistryClient extends AutoCloseable {
       throws UnacceptableStalenessException;
 
   /**
+   * Performs the same action as described by
+   * {@link #isApiCoveredByServerKey(Element, RSAPublicKey)}, but throws an exception instead of
+   * returning booleans.
+   *
+   * @param apiElement as in {@link #isApiCoveredByServerKey(Element, RSAPublicKey)}.
+   * @param serverKey as in {@link #isApiCoveredByServerKey(Element, RSAPublicKey)}.
+   * @throws AssertionFailedException if this API is not covered by this server key.
+   * @throws InvalidApiEntryElement as in {@link #isApiCoveredByServerKey(Element, RSAPublicKey)}.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.5.0
+   */
+  void assertApiIsCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
+      throws AssertionFailedException, InvalidApiEntryElement, UnacceptableStalenessException;
+
+  /**
    * Performs the same action as described by {@link #isCertificateKnown(Certificate)}, but throws
    * an exception instead of returning booleans.
    *
