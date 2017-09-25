@@ -406,6 +406,12 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public RSAPublicKey findRsaPublicKey(String fingerprint) throws UnacceptableStalenessException {
+    this.assertAcceptableStaleness();
+    return this.doc.findRsaPublicKey(fingerprint);
+  }
+
+  @Override
   public Collection<HeiEntry> getAllHeis() throws UnacceptableStalenessException {
     // Since expiry date can only be extended, there is no need to synchronize.
     this.assertAcceptableStaleness();

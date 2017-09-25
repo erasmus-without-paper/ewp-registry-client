@@ -449,6 +449,35 @@ public class ClientImplBasicTests extends TestBase {
   }
 
   @Test
+  public void testFindRsaPublicKey() {
+
+    // First test a couple of valid ones.
+
+    RSAPublicKey result =
+        cli.findRsaPublicKey("a29969edd0d04f22bf19db9e417b181c63928accdc58ecf3ac662e51d8497791");
+    assertThat(result).isEqualTo(public512);
+    assertThat(result).isNotSameAs(public512);
+
+    result =
+        cli.findRsaPublicKey("4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b");
+    assertThat(result).isEqualTo(public1024);
+    assertThat(result).isNotSameAs(public1024);
+
+    // Make sure that the cache works (expect to receive exactly the same RSAPublicKey object).
+
+    RSAPublicKey result2 =
+        cli.findRsaPublicKey("4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b");
+    assertThat(result2).isSameAs(result);
+
+    // This fingerprint exists, but it doesn't contain a valid public key. (In theory, this
+    // should never happen, but the client should be prepared for bugs in Registry Service.)
+
+    result =
+        cli.findRsaPublicKey("89a5cce39127d8d873b912fdc810b739584d212414b1c78f38b3f9db5973dcc4");
+    assertThat(result).isNull();
+  }
+
+  @Test
   public void testGetAllHeis() {
     assertThat(cli.getAllHeis()).containsExactlyInAnyOrder(cli.findHei("bob.example.com"),
         cli.findHei("john.example.com"), cli.findHei("fred.example.com"),

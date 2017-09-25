@@ -2,8 +2,12 @@ package eu.erasmuswithoutpaper.registryclient;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,6 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPath;
@@ -28,6 +33,8 @@ import eu.erasmuswithoutpaper.registryclient.RegistryClient.InvalidApiEntryEleme
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.RegistryClientException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -66,6 +73,8 @@ class CatalogueDocument {
       super(message, cause);
     }
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(CatalogueDocument.class);
 
   /**
    * The key which we use to attach internal objects onto the DOM Elements we expose outside.
@@ -240,6 +249,15 @@ class CatalogueDocument {
   private final Map<String, List<Element>> apiIndex;
 
   /**
+   * "SHA-256 -> RSA public key" index for {@link #doc}.
+   *
+   * <p>
+   * This map holds RSA public keys parsed from catalogue's binaries.
+   * </p>
+   */
+  private final HashMap<String, RSAPublicKey> keyBodies;
+
+  /**
    * Indicates the time after which this copy of the catalogue should be considered stale. It is
    * okay to serve stale copies for a while, but the client should schedule an "is it still
    * up-to-date?" check.
@@ -318,6 +336,7 @@ class CatalogueDocument {
     this.heiIdMaps = new HashMap<>();
     this.apiIndex = new HashMap<>();
     this.heiEntries = new HashMap<>();
+    this.keyBodies = new HashMap<>();
 
     // Create indexes.
 
@@ -405,6 +424,26 @@ class CatalogueDocument {
                 hostElem, XPathConstants.NODESET))) {
           String fingerprint = keyElem.getAttribute("sha-256");
           keys.add(fingerprint);
+        }
+      }
+
+      KeyFactory rsaKeyFactory;
+      try {
+        rsaKeyFactory = KeyFactory.getInstance("RSA");
+      } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException(e);
+      }
+      for (Element keyElem : Utils.asElementList(
+          (NodeList) xpath.evaluate("r:binaries/r:rsa-public-key", root, XPathConstants.NODESET))) {
+        String fingerprint = keyElem.getAttribute("sha-256");
+        byte[] data = DatatypeConverter.parseBase64Binary(keyElem.getTextContent());
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
+        RSAPublicKey value;
+        try {
+          value = (RSAPublicKey) rsaKeyFactory.generatePublic(spec);
+          this.keyBodies.put(fingerprint, value);
+        } catch (InvalidKeySpecException | ClassCastException e) {
+          logger.warn("Could not load object " + fingerprint + " as RSAPublicKey: " + e.toString());
         }
       }
 
@@ -599,6 +638,10 @@ class CatalogueDocument {
       }
     }
     return results;
+  }
+
+  RSAPublicKey findRsaPublicKey(String fingerprint) {
+    return this.keyBodies.get(fingerprint);
   }
 
   /**

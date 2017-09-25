@@ -498,6 +498,30 @@ public interface RegistryClient extends AutoCloseable {
       throws UnacceptableStalenessException;
 
   /**
+   * Find a public key identified by a given fingerprint.
+   *
+   * <p>
+   * Please note, that the mere fact of finding the key in the Registry's catalogue, tells you
+   * nothing about the owner, nor the permissions of this key. If you manage to find the key, then
+   * in most cases you still need to call some other methods (such as
+   * {@link #assertHeiIsCoveredByClientKey(String, RSAPublicKey)} or
+   * {@link #isApiCoveredByServerKey(Element, RSAPublicKey)}), in order to verify the key.
+   * </p>
+   *
+   * @param fingerprint HEX-encoded SHA-256 fingerprint of the public key.
+   *        <p>
+   *        If you're using EWP's HTTP Signature client/server authentication methods, then this
+   *        value is taken from the <code>keyId</code> parameter passed in
+   *        <code>Authorization</code> or <code>Signature</code> header.
+   *        </p>
+   * @return Either {@link RSAPublicKey} or <b>null</b> (if no such key was found in the Registry).
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @since 1.5.0
+   */
+  RSAPublicKey findRsaPublicKey(String fingerprint) throws UnacceptableStalenessException;
+
+  /**
    * Retrieve a list of all HEIs described in the Registry's catalogue.
    *
    * <p>
