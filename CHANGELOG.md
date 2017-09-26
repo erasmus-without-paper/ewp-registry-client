@@ -10,7 +10,7 @@ Release notes
  * Added support for retrieving RSA public keys by their SHA-256 fingerprint
    (the `findRsaPublicKey` method). Key bodies were introduced in [Registry API
    v1.3.0](https://github.com/erasmus-without-paper/ewp-specs-api-registry/blob/v1.3.0/CHANGELOG.md).
-   
+
  * Added `assertApiIsCoveredByServerKey` method. Since most other `is*` methods
    have their `assert*` counterparts, it seemed better to add this one too.
 
