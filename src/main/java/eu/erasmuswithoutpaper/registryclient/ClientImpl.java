@@ -185,7 +185,7 @@ public class ClientImpl implements RegistryClient {
         logger.debug("The cached copy seems to be acceptable. "
             + "We won't be refreshing it (this will speed up the construction).");
       } else {
-        logger.debug("The current-held copy of the catalogue is expired. "
+        logger.debug("Our cached copy of the catalogue has expired. "
             + "We will refresh it now (this might make construction a bit slower).");
         try {
           this.refresh();
