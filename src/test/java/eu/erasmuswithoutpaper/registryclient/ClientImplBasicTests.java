@@ -377,6 +377,14 @@ public class ClientImplBasicTests extends TestBase {
     assertThat(cli.findApis(conds)).hasSize(4);
     conds.setRequiredHei("fred.example.com");
     assertThat(cli.findApis(conds)).hasSize(0);
+
+    conds = new ApiSearchConditions();
+    conds.setApiClassRequired("urn:bla", "standalone3");
+    assertThat(cli.findApis(conds)).hasSize(2);
+    conds.setMinVersionRequired("0.0.0");
+    assertThat(cli.findApis(conds)).hasSize(1);
+    conds.setMinVersionRequired("1.2.4");
+    assertThat(cli.findApis(conds)).hasSize(0);
   }
 
   @Test
