@@ -20,8 +20,6 @@ public class ClientImplIntegrationTests extends TestBase {
   @Test
   public void test304Responses() {
 
-    /* We need a phaser to prevent ClientImpl from our fetcher in loop. */
-
     FakeCatalogueFetcher fetcher = new FakeCatalogueFetcher();
 
     ClientImplOptions options = new ClientImplOptions();
