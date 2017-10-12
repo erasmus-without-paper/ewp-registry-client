@@ -281,6 +281,12 @@ class CatalogueDocument {
     DocumentBuilder docBuilder = Utils.newSecureDocumentBuilder();
 
     this.expires = registryResponse.getExpires();
+    if (this.expires == null) {
+      // It seems that the Registry didn't supply the "Expires" header.
+      // (In general, this shouldn't happen.)
+      logger.warn("Missing 'Expires' header in catalogue response. Will assume 5 minutes.");
+      this.expires = new Date((new Date().getTime()) + 1000 * 60 * 5);
+    }
     this.etag = registryResponse.getETag();
 
     // Parse it.

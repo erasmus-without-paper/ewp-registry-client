@@ -143,7 +143,11 @@ public interface CatalogueFetcher {
      * @return as described in {@link #RegistryResponse(Date)}.
      */
     Date getExpires() {
-      return new Date(this.expires.getTime());
+      if (this.expires != null) {
+        return new Date(this.expires.getTime());
+      } else {
+        return null;
+      }
     }
   }
 
