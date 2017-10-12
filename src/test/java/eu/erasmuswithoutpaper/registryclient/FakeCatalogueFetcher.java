@@ -2,8 +2,6 @@ package eu.erasmuswithoutpaper.registryclient;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,40 +18,9 @@ public class FakeCatalogueFetcher implements CatalogueFetcher {
 
   private volatile String catalogueToUse;
   private volatile Integer lastReturnedStatus;
-  private CountDownLatch latchNextRunAllowed;
-  private CountDownLatch latchPreviousRunCompleted;
-
-  public FakeCatalogueFetcher() {
-    this.latchNextRunAllowed = new CountDownLatch(1);
-    this.latchPreviousRunCompleted = null;
-  }
-
-  public void allowItToContinueOnce() {
-    logger.trace("Allowing " + this + " to run");
-    this.latchNextRunAllowed.countDown();
-  }
 
   @Override
   public RegistryResponse fetchCatalogue(String eTag) throws IOException {
-    if (this.latchPreviousRunCompleted != null) {
-      // Notify master that previous loop is completed.
-      logger.trace(this + " has completed its previous run.");
-      this.latchNextRunAllowed = new CountDownLatch(1);
-      this.latchPreviousRunCompleted.countDown();
-    }
-    this.latchPreviousRunCompleted = new CountDownLatch(1);
-    try {
-      // Wait for the master to allow another run.
-      logger.trace(this + " is waiting for someone to allow it to continue.");
-      if (!this.latchNextRunAllowed.await(20, TimeUnit.SECONDS)) {
-        throw new RuntimeException("Nobody allowed " + this + " to continue!");
-      }
-    } catch (InterruptedException e) {
-      logger.trace(this + " was interrupted. Will return IOException.");
-      this.lastReturnedStatus = null;
-      throw new IOException(e);
-    }
-    logger.trace(this + " was allowed to run.");
     this.lastReturnedStatus = null;
     String newETag = this.catalogueToUse;
 
@@ -86,17 +53,5 @@ public class FakeCatalogueFetcher implements CatalogueFetcher {
   @Override
   public String toString() {
     return "FakeCatalogueFetcher[" + this.catalogueToUse + "]";
-  }
-
-  public void waitUntilItCompletes() {
-    try {
-      logger.trace("Waiting for " + this + " to complete its previous run.");
-      if (!this.latchPreviousRunCompleted.await(20, TimeUnit.SECONDS)) {
-        throw new RuntimeException(this + " failed to notify about completing its previous run!");
-      }
-      logger.trace("Waking up after " + this + " has completed its previous run.");
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
   }
 }

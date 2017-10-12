@@ -34,7 +34,6 @@ public class GenericTests extends TestBase {
     ClientImplOptions options = new ClientImplOptions();
     options.setCatalogueFetcher(fetcher);
     fetcher.setCatalogueToUse("xxe.xml");
-    fetcher.allowItToContinueOnce();
     try (RegistryClient cli = new ClientImpl(options)) {
       cli.refresh();
       fail("Exception expected.");
