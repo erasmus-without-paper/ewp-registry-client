@@ -2,6 +2,18 @@ Release notes
 =============
 
 
+1.5.1
+-----
+
+*Released on 2017-10-12*
+
+ * Bugfix: Client would throw an exception if the Registry Service responded
+   with a missing `Expires` header (it shouldn't happen in practice, but an
+   upgrade is recommended nonetheless).
+
+ * Fixed some minor spelling mistakes in log messages.
+
+
 1.5.0
 -----
 
