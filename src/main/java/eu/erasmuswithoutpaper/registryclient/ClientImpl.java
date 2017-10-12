@@ -350,7 +350,7 @@ public class ClientImpl implements RegistryClient {
     if (this.executor != null) {
       this.executor.shutdownNow();
       try {
-        if (this.executor.awaitTermination(5, TimeUnit.SECONDS)) {
+        if (this.executor.awaitTermination(30, TimeUnit.SECONDS)) {
           logger.info("All threads exited successfully.");
         } else {
           logger.warn("Some threads are still running, but we won't wait anymore.");

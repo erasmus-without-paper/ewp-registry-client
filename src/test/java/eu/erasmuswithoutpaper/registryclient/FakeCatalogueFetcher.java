@@ -45,7 +45,7 @@ public class FakeCatalogueFetcher implements CatalogueFetcher {
     try {
       // Wait for the master to allow another run.
       logger.trace(this + " is waiting for someone to allow it to continue.");
-      if (!this.latchNextRunAllowed.await(3, TimeUnit.SECONDS)) {
+      if (!this.latchNextRunAllowed.await(20, TimeUnit.SECONDS)) {
         throw new RuntimeException("Nobody allowed " + this + " to continue!");
       }
     } catch (InterruptedException e) {
@@ -91,7 +91,7 @@ public class FakeCatalogueFetcher implements CatalogueFetcher {
   public void waitUntilItCompletes() {
     try {
       logger.trace("Waiting for " + this + " to complete its previous run.");
-      if (!this.latchPreviousRunCompleted.await(3, TimeUnit.SECONDS)) {
+      if (!this.latchPreviousRunCompleted.await(20, TimeUnit.SECONDS)) {
         throw new RuntimeException(this + " failed to notify about completing its previous run!");
       }
       logger.trace("Waking up after " + this + " has completed its previous run.");
