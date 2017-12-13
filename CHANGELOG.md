@@ -9,9 +9,18 @@ Release notes
 
  * Added support for retrieving RSA public keys for specific API entries. Two
    new methods:
-   
+
    - `getServerKeyCoveringApi`
    - `getServerKeysCoveringApi`
+
+ * Fixed server-key retrieval in `ClientImpl`. Previously, the
+   `isApiCoveredByServerKey` method might have incorrectly returned `false`,
+   when it should have returned `true`.
+
+   Also, explicitly stated the `apiEntry` elements retrieved from the
+   `RegistryClient` should not be cached.
+
+   See [this thread](https://github.com/erasmus-without-paper/ewp-registry-client/issues/8).
 
 
 1.5.1

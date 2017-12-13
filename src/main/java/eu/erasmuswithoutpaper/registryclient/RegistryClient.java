@@ -116,6 +116,33 @@ public interface RegistryClient extends AutoCloseable {
   }
 
   /**
+   * Thrown whenever a stale API-entry Element has been passed to one of the {@link RegistryClient}
+   * 's methods. Make sure that you are using a fresh Element which you have gotten from one of the
+   * other {@link RegistryClient}'s methods, such as
+   * {@link RegistryClient#findApi(ApiSearchConditions)}.
+   *
+   * <p>
+   * This differs from {@link InvalidApiEntryElement}. In case of {@link StaleApiEntryElement}, the
+   * API Element <b>did</b> originate from the {@link RegistryClient}. The problem is that it did so
+   * quite a long time ago. You should fetch a fresh copy of the element every time you want to use
+   * the API. See here: https://github.com/erasmus-without-paper/ewp-registry-client/issues/8
+   * </p>
+   *
+   * @since 1.6.0
+   */
+  @SuppressWarnings("serial")
+  class StaleApiEntryElement extends InvalidApiEntryElement {
+
+    public StaleApiEntryElement() {
+      super();
+    }
+
+    public StaleApiEntryElement(RuntimeException cause) {
+      super(cause);
+    }
+  }
+
+  /**
    * Thrown by multiple {@link RegistryClient} methods when their internal copy of the Registry's
    * catalogue is "too old".
    *
@@ -383,6 +410,13 @@ public interface RegistryClient extends AutoCloseable {
    * before using it.
    * </p>
    *
+   * <p>
+   * You SHOULD NOT keep references to API entry elements for longer use. You SHOULD acquire fresh
+   * copies directly before you need it. Elements MAY contain internal {@link RegistryClient} data,
+   * and keeping them might cause memory leaks. See here:
+   * https://github.com/erasmus-without-paper/ewp-registry-client/issues/8
+   * </p>
+   *
    * @param conditions Describes the conditions to search for.
    * @return An XML DOM {@link Element} with the API entry, exactly as the were served by the
    *         Registry Service.
@@ -397,6 +431,13 @@ public interface RegistryClient extends AutoCloseable {
    * <p>
    * This works the same as {@link #findApi(ApiSearchConditions)} does, but it returns a collection
    * of all matched API entry elements, instead of just "the best one".
+   * </p>
+   *
+   * <p>
+   * You SHOULD NOT keep references to API entry elements for longer use. You SHOULD acquire fresh
+   * copies directly before you need it. Elements MAY contain internal {@link RegistryClient} data,
+   * and keeping them might cause memory leaks. See here:
+   * https://github.com/erasmus-without-paper/ewp-registry-client/issues/8
    * </p>
    *
    * @param conditions as in {@link #findApi(ApiSearchConditions)}.

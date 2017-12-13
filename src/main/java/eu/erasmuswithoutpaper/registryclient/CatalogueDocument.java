@@ -31,6 +31,7 @@ import javax.xml.xpath.XPathFactory;
 import eu.erasmuswithoutpaper.registryclient.CatalogueFetcher.Http200RegistryResponse;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.InvalidApiEntryElement;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.RegistryClientException;
+import eu.erasmuswithoutpaper.registryclient.RegistryClient.StaleApiEntryElement;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -54,12 +55,31 @@ class CatalogueDocument {
   private static class InternalApiEntryAttachment {
 
     /**
+     * The parent {@link CatalogueDocument}, from which this API entry originated from.
+     */
+    private final CatalogueDocument catalogueDocument;
+
+    /**
      * The parent <code>&lt;host&gt;</code> element which this API entry has been cloned from.
      */
     private final Element host;
 
-    private InternalApiEntryAttachment(Element host) {
+    /**
+     * The time when this object was created, in the Date.getTime format (number of milliseconds
+     * since January 1, 1970, 00:00:00 GMT).
+     */
+    private final long created;
+
+    private InternalApiEntryAttachment(CatalogueDocument catalogueDocument, Element host) {
+      this.catalogueDocument = catalogueDocument;
       this.host = host;
+      this.created = new Date().getTime();
+    }
+
+    public boolean isStale() {
+      long now = new Date().getTime();
+      long diff = now - this.created;
+      return diff > 60000; // one minute
     }
   }
 
@@ -460,16 +480,8 @@ class CatalogueDocument {
 
   public boolean isApiCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
       throws InvalidApiEntryElement {
-    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
-    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
-      throw new InvalidApiEntryElement();
-    }
-    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
-    if (!this.hostServerKeys.containsKey(meta.host)) {
-      // The host of this API doesn't have *any* server keys.
-      return false;
-    }
-    return this.hostServerKeys.get(meta.host).contains(Utils.extractFingerprint(serverKey));
+    return this.extractFingerprintsForApiElement(apiElement)
+        .contains(Utils.extractFingerprint(serverKey));
   }
 
   @Override
@@ -506,6 +518,36 @@ class CatalogueDocument {
       }
     }
     return true;
+  }
+
+  private Set<String> extractFingerprintsForApiElement(Element apiElement) {
+
+    // Extract the meta object, which we have previously embedded into the Element.
+
+    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
+    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
+      throw new InvalidApiEntryElement();
+    }
+    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
+
+    // Verify if the meta object is not yet stale. We want to force the clients
+    // to NOT cache these apiElements.
+
+    if (meta.isStale()) {
+      logger.warn("Stale apiElements in use. Possible memory leaks. See: "
+          + "https://github.com/erasmus-without-paper/ewp-registry-client/issues/8");
+      throw new StaleApiEntryElement();
+    }
+
+    // Use the CatalogueDocument from the meta object, instead of "this".
+    // This will fix the issue of clients getting wrong results, but may cause
+    // more memory leaks, if clients cache apiElements somewhere.
+
+    if (!meta.catalogueDocument.hostServerKeys.containsKey(meta.host)) {
+      // The host of this API doesn't have *any* server keys.
+      return new HashSet<>();
+    }
+    return meta.catalogueDocument.hostServerKeys.get(meta.host);
   }
 
   /**
@@ -565,7 +607,8 @@ class CatalogueDocument {
           // Create a copy of the element, so that it's thread-safe.
           Element clone = (Element) elem.cloneNode(true);
           clone.setUserData(INTERNAL_USERDATA_KEY,
-              new InternalApiEntryAttachment((Element) elem.getParentNode().getParentNode()), null);
+              new InternalApiEntryAttachment(this, (Element) elem.getParentNode().getParentNode()),
+              null);
           results.add(clone);
         }
       }
@@ -716,16 +759,7 @@ class CatalogueDocument {
   }
 
   RSAPublicKey getServerKeyCoveringApi(Element apiElement) {
-    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
-    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
-      throw new InvalidApiEntryElement();
-    }
-    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
-    if (!this.hostServerKeys.containsKey(meta.host)) {
-      // The host of this API doesn't have *any* server keys.
-      return null;
-    }
-    for (String fingerprint : this.hostServerKeys.get(meta.host)) {
+    for (String fingerprint : this.extractFingerprintsForApiElement(apiElement)) {
       RSAPublicKey key = this.findRsaPublicKey(fingerprint);
       if (key != null) {
         return key;
@@ -740,16 +774,7 @@ class CatalogueDocument {
 
   Collection<RSAPublicKey> getServerKeysCoveringApi(Element apiElement) {
     List<RSAPublicKey> result = new ArrayList<>();
-    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
-    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
-      throw new InvalidApiEntryElement();
-    }
-    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
-    if (!this.hostServerKeys.containsKey(meta.host)) {
-      // The host of this API doesn't have *any* server keys.
-      return result;
-    }
-    for (String fingerprint : this.hostServerKeys.get(meta.host)) {
+    for (String fingerprint : this.extractFingerprintsForApiElement(apiElement)) {
       RSAPublicKey key = this.findRsaPublicKey(fingerprint);
       if (key != null) {
         result.add(key);
@@ -761,7 +786,6 @@ class CatalogueDocument {
     }
     return result;
   }
-
 
   /**
    * This implements {@link RegistryClient#isCertificateKnown(Certificate)}, but only for this
