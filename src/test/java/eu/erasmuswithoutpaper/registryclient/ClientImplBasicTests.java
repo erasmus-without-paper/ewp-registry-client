@@ -605,21 +605,31 @@ public class ClientImplBasicTests extends TestBase {
     assertThat(cli.isApiCoveredByServerKey(api1, public1024)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api1, public1536)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api1, public2048)).isFalse();
+    assertThat(cli.getServerKeysCoveringApi(api1)).hasSize(1);
+    assertThat(cli.getServerKeyCoveringApi(api1)).isEqualTo(public512);
 
     assertThat(cli.isApiCoveredByServerKey(api2, public512)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api2, public1024)).isTrue();
     assertThat(cli.isApiCoveredByServerKey(api2, public1536)).isTrue();
     assertThat(cli.isApiCoveredByServerKey(api2, public2048)).isFalse();
+    assertThat(cli.getServerKeysCoveringApi(api2)).hasSize(2);
+    assertThat(cli.getServerKeysCoveringApi(api2)).containsExactlyInAnyOrder(public1024,
+        public1536);
+    assertThat(cli.getServerKeyCoveringApi(api2)).isIn(public1024, public1536);
 
     assertThat(cli.isApiCoveredByServerKey(api3, public512)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api3, public1024)).isTrue();
     assertThat(cli.isApiCoveredByServerKey(api3, public1536)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api3, public2048)).isFalse();
+    assertThat(cli.getServerKeysCoveringApi(api3)).hasSize(1);
+    assertThat(cli.getServerKeyCoveringApi(api3)).isEqualTo(public1024);
 
     assertThat(cli.isApiCoveredByServerKey(api4, public512)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api4, public1024)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api4, public1536)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api4, public2048)).isFalse();
+    assertThat(cli.getServerKeysCoveringApi(api4)).hasSize(0);
+    assertThat(cli.getServerKeyCoveringApi(api4)).isNull();
   }
 
   @Test

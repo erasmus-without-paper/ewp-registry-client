@@ -440,6 +440,20 @@ public class ClientImpl implements RegistryClient {
   }
 
   @Override
+  public RSAPublicKey getServerKeyCoveringApi(Element apiElement)
+      throws UnacceptableStalenessException, InvalidApiEntryElement {
+    this.assertAcceptableStaleness();
+    return this.doc.getServerKeyCoveringApi(apiElement);
+  }
+
+  @Override
+  public Collection<RSAPublicKey> getServerKeysCoveringApi(Element apiElement)
+      throws UnacceptableStalenessException, InvalidApiEntryElement {
+    this.assertAcceptableStaleness();
+    return this.doc.getServerKeysCoveringApi(apiElement);
+  }
+
+  @Override
   public boolean isApiCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
       throws UnacceptableStalenessException, InvalidApiEntryElement {
     this.assertAcceptableStaleness();

@@ -2,6 +2,18 @@ Release notes
 =============
 
 
+1.6.0
+-----
+
+*Released on 2017-12-13*
+
+ * Added support for retrieving RSA public keys for specific API entries. Two
+   new methods:
+   
+   - `getServerKeyCoveringApi`
+   - `getServerKeysCoveringApi`
+
+
 1.5.1
 -----
 

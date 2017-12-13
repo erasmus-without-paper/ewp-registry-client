@@ -715,6 +715,54 @@ class CatalogueDocument {
     return Collections.unmodifiableSet(heis);
   }
 
+  RSAPublicKey getServerKeyCoveringApi(Element apiElement) {
+    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
+    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
+      throw new InvalidApiEntryElement();
+    }
+    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
+    if (!this.hostServerKeys.containsKey(meta.host)) {
+      // The host of this API doesn't have *any* server keys.
+      return null;
+    }
+    for (String fingerprint : this.hostServerKeys.get(meta.host)) {
+      RSAPublicKey key = this.findRsaPublicKey(fingerprint);
+      if (key != null) {
+        return key;
+      } else {
+        logger.warn("Catalogue contains a reference to a non-existent key " + fingerprint
+            + ". We will ignore this reference, but this shouldn't happen and should be "
+            + "investigated.");
+      }
+    }
+    return null;
+  }
+
+  Collection<RSAPublicKey> getServerKeysCoveringApi(Element apiElement) {
+    List<RSAPublicKey> result = new ArrayList<>();
+    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
+    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
+      throw new InvalidApiEntryElement();
+    }
+    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
+    if (!this.hostServerKeys.containsKey(meta.host)) {
+      // The host of this API doesn't have *any* server keys.
+      return result;
+    }
+    for (String fingerprint : this.hostServerKeys.get(meta.host)) {
+      RSAPublicKey key = this.findRsaPublicKey(fingerprint);
+      if (key != null) {
+        result.add(key);
+      } else {
+        logger.warn("Catalogue contains a reference to a non-existent key " + fingerprint
+            + ". We will ignore this reference, but this shouldn't happen and should be "
+            + "investigated.");
+      }
+    }
+    return result;
+  }
+
+
   /**
    * This implements {@link RegistryClient#isCertificateKnown(Certificate)}, but only for this
    * particular version of the catalogue document.

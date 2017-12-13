@@ -597,6 +597,54 @@ public interface RegistryClient extends AutoCloseable {
       throws UnacceptableStalenessException;
 
   /**
+   * Find a server key covering a given API.
+   *
+   * <p>
+   * This will be one of the keys returned be {@link #getServerKeysCoveringApi(Element)}. The method
+   * by which this element is chosen is not specified (i.e. it can be any of them).
+   * </p>
+   *
+   * <p>
+   * This method might be useful if you are choosing a key for request encryption. On the other
+   * hand, if you are validating response signatures, then you probably should look at
+   * {@link #isApiCoveredByServerKey(Element, RSAPublicKey)}.
+   * </p>
+   *
+   * @param apiElement The catalogue {@link Element} which describes the said API. This MUST be the
+   *        same element which you have previously gotten from {@link #findApi(ApiSearchConditions)}
+   *        or {@link #findApis(ApiSearchConditions)} method.
+   * @return {@link RSAPublicKey}, or <code>null</code> if no covering server key was found.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @throws InvalidApiEntryElement if the <b>apiElement</b> you have provided doesn't seem to be a
+   *         valid one (the one which has been produced by this {@link RegistryClient}).
+   * @since 1.6.0
+   */
+  RSAPublicKey getServerKeyCoveringApi(Element apiElement)
+      throws UnacceptableStalenessException, InvalidApiEntryElement;
+
+  /**
+   * Retrieve all server keys covering a given API.
+   *
+   * <p>
+   * You might want to use this method instead of {@link #getServerKeyCoveringApi(Element)}, if you
+   * don't want just any of the keys, and prefer to choose the key by yourself.
+   * </p>
+   *
+   * @param apiElement The catalogue {@link Element} which describes the said API. This MUST be the
+   *        same element which you have previously gotten from {@link #findApi(ApiSearchConditions)}
+   *        or {@link #findApis(ApiSearchConditions)} method.
+   * @return A list of {@link RSAPublicKey} instances. May be empty.
+   * @throws UnacceptableStalenessException if the catalogue copy is "too old". See
+   *         {@link UnacceptableStalenessException} for more information.
+   * @throws InvalidApiEntryElement if the <b>apiElement</b> you have provided doesn't seem to be a
+   *         valid one (the one which has been produced by this {@link RegistryClient}).
+   * @since 1.6.0
+   */
+  Collection<RSAPublicKey> getServerKeysCoveringApi(Element apiElement)
+      throws UnacceptableStalenessException, InvalidApiEntryElement;
+
+  /**
    * Check if a given API is covered by a given server key.
    *
    * @param apiElement The catalogue {@link Element} which describes the said API. This MUST be the
