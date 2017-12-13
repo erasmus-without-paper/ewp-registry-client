@@ -530,7 +530,33 @@ public class ClientImplBasicTests extends TestBase {
   }
 
   @Test
-  public void testIsApiCoveredByServerKey() {
+  public void testIsCertOrKeyKnown() {
+    assertThat(cli.isCertificateKnown(cert512)).isFalse();
+    assertThat(cli.isClientKeyKnown(public512)).isFalse();
+    assertThat(cli.isCertificateKnown(cert1024)).isTrue();
+    assertThat(cli.isClientKeyKnown(public1024)).isTrue();
+    assertThat(cli.isCertificateKnown(cert1536)).isTrue();
+    assertThat(cli.isClientKeyKnown(public1536)).isTrue();
+    assertThat(cli.isCertificateKnown(cert2048)).isTrue();
+    assertThat(cli.isClientKeyKnown(public2048)).isTrue();
+  }
+
+  @Test
+  public void testIsHeiCoveredByCertOrKey() {
+    assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert512)).isFalse();
+    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public512)).isFalse();
+    assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert1024)).isTrue();
+    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public1024)).isTrue();
+    assertThat(cli.isHeiCoveredByCertificate("bob.example.com", cert1024)).isTrue();
+    assertThat(cli.isHeiCoveredByClientKey("bob.example.com", public1024)).isTrue();
+    assertThat(cli.isHeiCoveredByCertificate("fred.example.com", cert1024)).isFalse();
+    assertThat(cli.isHeiCoveredByClientKey("fred.example.com", public1024)).isFalse();
+    assertThat(cli.isHeiCoveredByCertificate("unknown-hei-id", cert1024)).isFalse();
+    assertThat(cli.isHeiCoveredByClientKey("unknown-hei-id", public1024)).isFalse();
+  }
+
+  @Test
+  public void testServerKeyCoverageMethods() {
 
     // First, find some *specific* API entry elements.
 
@@ -594,32 +620,6 @@ public class ClientImplBasicTests extends TestBase {
     assertThat(cli.isApiCoveredByServerKey(api4, public1024)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api4, public1536)).isFalse();
     assertThat(cli.isApiCoveredByServerKey(api4, public2048)).isFalse();
-  }
-
-  @Test
-  public void testIsCertOrKeyKnown() {
-    assertThat(cli.isCertificateKnown(cert512)).isFalse();
-    assertThat(cli.isClientKeyKnown(public512)).isFalse();
-    assertThat(cli.isCertificateKnown(cert1024)).isTrue();
-    assertThat(cli.isClientKeyKnown(public1024)).isTrue();
-    assertThat(cli.isCertificateKnown(cert1536)).isTrue();
-    assertThat(cli.isClientKeyKnown(public1536)).isTrue();
-    assertThat(cli.isCertificateKnown(cert2048)).isTrue();
-    assertThat(cli.isClientKeyKnown(public2048)).isTrue();
-  }
-
-  @Test
-  public void testIsHeiCoveredByCertOrKey() {
-    assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert512)).isFalse();
-    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public512)).isFalse();
-    assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert1024)).isTrue();
-    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public1024)).isTrue();
-    assertThat(cli.isHeiCoveredByCertificate("bob.example.com", cert1024)).isTrue();
-    assertThat(cli.isHeiCoveredByClientKey("bob.example.com", public1024)).isTrue();
-    assertThat(cli.isHeiCoveredByCertificate("fred.example.com", cert1024)).isFalse();
-    assertThat(cli.isHeiCoveredByClientKey("fred.example.com", public1024)).isFalse();
-    assertThat(cli.isHeiCoveredByCertificate("unknown-hei-id", cert1024)).isFalse();
-    assertThat(cli.isHeiCoveredByClientKey("unknown-hei-id", public1024)).isFalse();
   }
 
   @Test
