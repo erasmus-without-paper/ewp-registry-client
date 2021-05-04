@@ -11,7 +11,7 @@ public class GenericTests extends TestBase {
 
   @Test
   public void testReadingResources() {
-    assertThat(getFileAsString("file.txt")).isEqualTo("Content.\n");
+    assertThat(getFileAsString("file.txt")).isEqualTo("Content." + System.lineSeparator());
   }
 
   @Test
