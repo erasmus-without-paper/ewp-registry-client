@@ -11,7 +11,8 @@ public class GenericTests extends TestBase {
 
   @Test
   public void testReadingResources() {
-    assertThat(getFileAsString("file.txt")).isEqualTo("Content.\n");
+    // using isEqualToIgnoringWhitespace to prevent EOL problems
+    assertThat(getFileAsString("file.txt")).isEqualToIgnoringWhitespace("Content.");
   }
 
   @Test
