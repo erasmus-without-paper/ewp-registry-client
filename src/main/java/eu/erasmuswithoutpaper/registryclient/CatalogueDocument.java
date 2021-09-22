@@ -36,9 +36,15 @@ import eu.erasmuswithoutpaper.registryclient.RegistryClient.StaleApiEntryElement
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.TypeInfo;
+import org.w3c.dom.UserDataHandler;
 import org.xml.sax.SAXException;
 
 /**
@@ -47,120 +53,12 @@ import org.xml.sax.SAXException;
 @SuppressFBWarnings("SIC_INNER_SHOULD_BE_STATIC_ANON")
 class CatalogueDocument {
 
-  /**
-   * Instances of this class get attached to the Elements returned by
-   * {@link CatalogueDocument#findApis(ApiSearchConditions)} and
-   * {@link CatalogueDocument#findApi(ApiSearchConditions)} methods.
-   */
-  private static class InternalApiEntryAttachment {
-
-    /**
-     * The parent {@link CatalogueDocument}, from which this API entry originated from.
-     */
-    private final CatalogueDocument catalogueDocument;
-
-    /**
-     * The parent <code>&lt;host&gt;</code> element which this API entry has been cloned from.
-     */
-    private final Element host;
-
-    /**
-     * The time when this object was created, in the Date.getTime format (number of milliseconds
-     * since January 1, 1970, 00:00:00 GMT).
-     */
-    private final long created;
-
-    private InternalApiEntryAttachment(CatalogueDocument catalogueDocument, Element host) {
-      this.catalogueDocument = catalogueDocument;
-      this.host = host;
-      this.created = new Date().getTime();
-    }
-
-    public boolean isStale() {
-      long now = new Date().getTime();
-      long diff = now - this.created;
-      return diff > 60000; // one minute
-    }
-  }
-
-  @SuppressWarnings({ "serial" })
-  static class CatalogueParserException extends RegistryClientException {
-    CatalogueParserException(String message) {
-      super(message);
-    }
-
-    CatalogueParserException(String message, Exception cause) {
-      super(message, cause);
-    }
-  }
-
   private static final Logger logger = LoggerFactory.getLogger(CatalogueDocument.class);
 
   /**
    * The key which we use to attach internal objects onto the DOM Elements we expose outside.
    */
   private static final String INTERNAL_USERDATA_KEY = "59a03da6-2456-4be1-9d21-13dc0df41978";
-
-  private static String getApiIndexKey(String namespaceUri, String localName) {
-    return "{" + namespaceUri + "}" + localName;
-  }
-
-  /**
-   * Convert <code>&lt;other-id&gt;</code> value to its canonical form.
-   */
-  private static String getCanonicalId(String value) {
-    return value.trim().toLowerCase(Locale.ENGLISH);
-  }
-
-  /**
-   * Check if first version string matches the "minimum required" version string in the second
-   * argument.
-   *
-   * <p>
-   * Both strings MUST be in thr "X.Y.Z" format, where X, Y and Z are non-negative integers (a
-   * subset of semantic versioning strings). If this requirement is not met, this method will not
-   * attempt to compare the strings, and it will simply return <code>false</code>.
-   * </p>
-   *
-   * <ul>
-   * <li><code>("1.6.0", "1.10.0") == false</code>,</li>
-   * <li><code>("1.10.0", "1.6.0") == true</code>,</li>
-   * <li><code>("1.6.0", "1.6.0") == true</code>,</li>
-   * <li><code>("1.10", "1.6.0") == false</code> (because the first one is invalid),</li>
-   * <li><code>("1.10.0", "1.6.0x") == false</code> (because the second one is invalid).</li>
-   * </ul>
-   *
-   * @param apiVersion string of 3 ordinal numbers separated by dots.
-   * @param minRequiredVersion string of 3 ordinal numbers separated by dots.
-   * @return <b>true</b> if both arguments are valid version strings, and the first one is equal or
-   *         greater than the second one.
-   */
-  static boolean doesVersionXMatchMinimumRequiredVersionY(String apiVersion,
-      String minRequiredVersion) {
-    String[] s1 = apiVersion.split("\\.");
-    String[] s2 = minRequiredVersion.split("\\.");
-    if (s1.length != 3 || s2.length != 3) {
-      return false;
-    }
-    int[] i1 = new int[3];
-    int[] i2 = new int[3];
-    try {
-      for (int i = 0; i < 3; i++) {
-        i1[i] = Integer.parseInt(s1[i]);
-        i2[i] = Integer.parseInt(s2[i]);
-      }
-    } catch (NumberFormatException e) {
-      return false;
-    }
-    for (int i = 0; i < 3; i++) {
-      if (i1[i] > i2[i]) {
-        return true;
-      } else if (i1[i] < i2[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
 
   /**
    * The underlying catalogue document.
@@ -478,6 +376,67 @@ class CatalogueDocument {
     }
   }
 
+  private static String getApiIndexKey(String namespaceUri, String localName) {
+    return "{" + namespaceUri + "}" + localName;
+  }
+
+  /**
+   * Convert <code>&lt;other-id&gt;</code> value to its canonical form.
+   */
+  private static String getCanonicalId(String value) {
+    return value.trim().toLowerCase(Locale.ENGLISH);
+  }
+
+  /**
+   * Check if first version string matches the "minimum required" version string in the second
+   * argument.
+   *
+   * <p>
+   * Both strings MUST be in thr "X.Y.Z" format, where X, Y and Z are non-negative integers (a
+   * subset of semantic versioning strings). If this requirement is not met, this method will not
+   * attempt to compare the strings, and it will simply return <code>false</code>.
+   * </p>
+   *
+   * <ul>
+   * <li><code>("1.6.0", "1.10.0") == false</code>,</li>
+   * <li><code>("1.10.0", "1.6.0") == true</code>,</li>
+   * <li><code>("1.6.0", "1.6.0") == true</code>,</li>
+   * <li><code>("1.10", "1.6.0") == false</code> (because the first one is invalid),</li>
+   * <li><code>("1.10.0", "1.6.0x") == false</code> (because the second one is invalid).</li>
+   * </ul>
+   *
+   * @param apiVersion string of 3 ordinal numbers separated by dots.
+   * @param minRequiredVersion string of 3 ordinal numbers separated by dots.
+   * @return <b>true</b> if both arguments are valid version strings, and the first one is equal or
+   *         greater than the second one.
+   */
+  static boolean doesVersionXMatchMinimumRequiredVersionY(String apiVersion,
+      String minRequiredVersion) {
+    String[] s1 = apiVersion.split("\\.");
+    String[] s2 = minRequiredVersion.split("\\.");
+    if (s1.length != 3 || s2.length != 3) {
+      return false;
+    }
+    int[] i1 = new int[3];
+    int[] i2 = new int[3];
+    try {
+      for (int i = 0; i < 3; i++) {
+        i1[i] = Integer.parseInt(s1[i]);
+        i2[i] = Integer.parseInt(s2[i]);
+      }
+    } catch (NumberFormatException e) {
+      return false;
+    }
+    for (int i = 0; i < 3; i++) {
+      if (i1[i] > i2[i]) {
+        return true;
+      } else if (i1[i] < i2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public boolean isApiCoveredByServerKey(Element apiElement, RSAPublicKey serverKey)
       throws InvalidApiEntryElement {
     return this.extractFingerprintsForApiElement(apiElement)
@@ -522,13 +481,12 @@ class CatalogueDocument {
 
   private Set<String> extractFingerprintsForApiElement(Element apiElement) {
 
-    // Extract the meta object, which we have previously embedded into the Element.
+    // Extract the meta object, which we store in the ApiEntryElement wrapper.
 
-    Object object = apiElement.getUserData(INTERNAL_USERDATA_KEY);
-    if (object == null || (!(object instanceof InternalApiEntryAttachment))) {
+    if (!(apiElement instanceof ApiEntryElement)) {
       throw new InvalidApiEntryElement();
     }
-    InternalApiEntryAttachment meta = (InternalApiEntryAttachment) object;
+    InternalApiEntryAttachment meta = ((ApiEntryElement) apiElement).internalApiEntryAttachment;
 
     // Verify if the meta object is not yet stale. We want to force the clients
     // to NOT cache these apiElements.
@@ -606,10 +564,9 @@ class CatalogueDocument {
         if (this.doesElementMatchConditions(elem, conditions)) {
           // Create a copy of the element, so that it's thread-safe.
           Element clone = (Element) elem.cloneNode(true);
-          clone.setUserData(INTERNAL_USERDATA_KEY,
-              new InternalApiEntryAttachment(this, (Element) elem.getParentNode().getParentNode()),
-              null);
-          results.add(clone);
+          ApiEntryElement apiEntryElement = new ApiEntryElement(clone,
+              new InternalApiEntryAttachment(this, (Element) elem.getParentNode().getParentNode()));
+          results.add(apiEntryElement);
         }
       }
     }
@@ -799,5 +756,351 @@ class CatalogueDocument {
   boolean isClientKeyKnown(RSAPublicKey clientKey) {
     String fingerprint = Utils.extractFingerprint(clientKey);
     return this.cliKeyHeis.containsKey(fingerprint);
+  }
+
+  /**
+   * Instances of this class get attached to the Elements returned by
+   * {@link CatalogueDocument#findApis(ApiSearchConditions)} and
+   * {@link CatalogueDocument#findApi(ApiSearchConditions)} methods.
+   */
+  private static class InternalApiEntryAttachment {
+
+    /**
+     * The parent {@link CatalogueDocument}, from which this API entry originated from.
+     */
+    private final CatalogueDocument catalogueDocument;
+
+    /**
+     * The parent <code>&lt;host&gt;</code> element which this API entry has been cloned from.
+     */
+    private final Element host;
+
+    /**
+     * The time when this object was created, in the Date.getTime format (number of milliseconds
+     * since January 1, 1970, 00:00:00 GMT).
+     */
+    private final long created;
+
+    private InternalApiEntryAttachment(CatalogueDocument catalogueDocument, Element host) {
+      this.catalogueDocument = catalogueDocument;
+      this.host = host;
+      this.created = new Date().getTime();
+    }
+
+    public boolean isStale() {
+      long now = new Date().getTime();
+      long diff = now - this.created;
+      return diff > 60000; // one minute
+    }
+  }
+
+  @SuppressWarnings({ "serial" })
+  static class CatalogueParserException extends RegistryClientException {
+    CatalogueParserException(String message) {
+      super(message);
+    }
+
+    CatalogueParserException(String message, Exception cause) {
+      super(message, cause);
+    }
+  }
+
+  private static class ApiEntryElement implements Element {
+
+    private final Element element;
+    private final InternalApiEntryAttachment internalApiEntryAttachment;
+
+    public ApiEntryElement(Element element, InternalApiEntryAttachment internalApiEntryAttachment) {
+      this.element = element;
+      this.internalApiEntryAttachment = internalApiEntryAttachment;
+    }
+
+    @Override
+    public String getTagName() {
+      return element.getTagName();
+    }
+
+    @Override
+    public String getAttribute(String name) {
+      return element.getAttribute(name);
+    }
+
+    @Override
+    public void setAttribute(String name, String value) throws DOMException {
+      element.setAttribute(name, value);
+    }
+
+    @Override
+    public void removeAttribute(String name) throws DOMException {
+      element.removeAttribute(name);
+    }
+
+    @Override
+    public Attr getAttributeNode(String name) {
+      return element.getAttributeNode(name);
+    }
+
+    @Override
+    public Attr setAttributeNode(Attr newAttr) throws DOMException {
+      return element.setAttributeNode(newAttr);
+    }
+
+    @Override
+    public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
+      return element.removeAttributeNode(oldAttr);
+    }
+
+    @Override
+    public NodeList getElementsByTagName(String name) {
+      return element.getElementsByTagName(name);
+    }
+
+    @Override
+    public String getAttributeNS(String namespaceUri, String localName) throws DOMException {
+      return element.getAttributeNS(namespaceUri, localName);
+    }
+
+    @Override
+    public void setAttributeNS(String namespaceUri, String qualifiedName, String value)
+        throws DOMException {
+      element.setAttributeNS(namespaceUri, qualifiedName, value);
+    }
+
+    @Override
+    public void removeAttributeNS(String namespaceUri, String localName) throws DOMException {
+      element.removeAttributeNS(namespaceUri, localName);
+    }
+
+    @Override
+    public Attr getAttributeNodeNS(String namespaceUri, String localName) throws DOMException {
+      return element.getAttributeNodeNS(namespaceUri, localName);
+    }
+
+    @Override
+    public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
+      return element.setAttributeNodeNS(newAttr);
+    }
+
+    @Override
+    public NodeList getElementsByTagNameNS(String namespaceUri, String localName)
+        throws DOMException {
+      return element.getElementsByTagNameNS(namespaceUri, localName);
+    }
+
+    @Override
+    public boolean hasAttribute(String name) {
+      return element.hasAttribute(name);
+    }
+
+    @Override
+    public boolean hasAttributeNS(String namespaceUri, String localName) throws DOMException {
+      return element.hasAttributeNS(namespaceUri, localName);
+    }
+
+    @Override
+    public TypeInfo getSchemaTypeInfo() {
+      return element.getSchemaTypeInfo();
+    }
+
+    @Override
+    public void setIdAttribute(String name, boolean isId) throws DOMException {
+      element.setIdAttribute(name, isId);
+    }
+
+    @Override
+    public void setIdAttributeNS(String namespaceUri, String localName, boolean isId)
+        throws DOMException {
+      element.setIdAttributeNS(namespaceUri, localName, isId);
+    }
+
+    @Override
+    public void setIdAttributeNode(Attr idAttr, boolean isId) throws DOMException {
+      element.setIdAttributeNode(idAttr, isId);
+    }
+
+    @Override
+    public String getNodeName() {
+      return element.getNodeName();
+    }
+
+    @Override
+    public String getNodeValue() throws DOMException {
+      return element.getNodeValue();
+    }
+
+    @Override
+    public void setNodeValue(String nodeValue) throws DOMException {
+      element.setNodeValue(nodeValue);
+    }
+
+    @Override
+    public short getNodeType() {
+      return element.getNodeType();
+    }
+
+    @Override
+    public Node getParentNode() {
+      return element.getParentNode();
+    }
+
+    @Override
+    public NodeList getChildNodes() {
+      return element.getChildNodes();
+    }
+
+    @Override
+    public Node getFirstChild() {
+      return element.getFirstChild();
+    }
+
+    @Override
+    public Node getLastChild() {
+      return element.getLastChild();
+    }
+
+    @Override
+    public Node getPreviousSibling() {
+      return element.getPreviousSibling();
+    }
+
+    @Override
+    public Node getNextSibling() {
+      return element.getNextSibling();
+    }
+
+    @Override
+    public NamedNodeMap getAttributes() {
+      return element.getAttributes();
+    }
+
+    @Override
+    public Document getOwnerDocument() {
+      return element.getOwnerDocument();
+    }
+
+    @Override
+    public Node insertBefore(Node newChild, Node refChild) throws DOMException {
+      return element.insertBefore(newChild, refChild);
+    }
+
+    @Override
+    public Node replaceChild(Node newChild, Node oldChild) throws DOMException {
+      return element.replaceChild(newChild, oldChild);
+    }
+
+    @Override
+    public Node removeChild(Node oldChild) throws DOMException {
+      return element.removeChild(oldChild);
+    }
+
+    @Override
+    public Node appendChild(Node newChild) throws DOMException {
+      return element.appendChild(newChild);
+    }
+
+    @Override
+    public boolean hasChildNodes() {
+      return element.hasChildNodes();
+    }
+
+    @Override
+    public Node cloneNode(boolean deep) {
+      return element.cloneNode(deep);
+    }
+
+    @Override
+    public void normalize() {
+      element.normalize();
+    }
+
+    @Override
+    public boolean isSupported(String feature, String version) {
+      return element.isSupported(feature, version);
+    }
+
+    @Override
+    public String getNamespaceURI() {
+      return element.getNamespaceURI();
+    }
+
+    @Override
+    public String getPrefix() {
+      return element.getPrefix();
+    }
+
+    @Override
+    public void setPrefix(String prefix) throws DOMException {
+      element.setPrefix(prefix);
+    }
+
+    @Override
+    public String getLocalName() {
+      return element.getLocalName();
+    }
+
+    @Override
+    public boolean hasAttributes() {
+      return element.hasAttributes();
+    }
+
+    @Override
+    public String getBaseURI() {
+      return element.getBaseURI();
+    }
+
+    @Override
+    public short compareDocumentPosition(Node other) throws DOMException {
+      return element.compareDocumentPosition(other);
+    }
+
+    @Override
+    public String getTextContent() throws DOMException {
+      return element.getTextContent();
+    }
+
+    @Override
+    public void setTextContent(String textContent) throws DOMException {
+      element.setTextContent(textContent);
+    }
+
+    @Override
+    public boolean isSameNode(Node other) {
+      return element.isSameNode(other);
+    }
+
+    @Override
+    public String lookupPrefix(String namespaceUri) {
+      return element.lookupPrefix(namespaceUri);
+    }
+
+    @Override
+    public boolean isDefaultNamespace(String namespaceUri) {
+      return element.isDefaultNamespace(namespaceUri);
+    }
+
+    @Override
+    public String lookupNamespaceURI(String prefix) {
+      return element.lookupNamespaceURI(prefix);
+    }
+
+    @Override
+    public boolean isEqualNode(Node arg) {
+      return element.isEqualNode(arg);
+    }
+
+    @Override
+    public Object getFeature(String feature, String version) {
+      return element.getFeature(feature, version);
+    }
+
+    @Override
+    public Object setUserData(String key, Object data, UserDataHandler handler) {
+      return element.setUserData(key, data, handler);
+    }
+
+    @Override
+    public Object getUserData(String key) {
+      return element.getUserData(key);
+    }
   }
 }
