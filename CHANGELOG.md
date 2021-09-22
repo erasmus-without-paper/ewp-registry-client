@@ -2,6 +2,17 @@ Release notes
 =============
 
 
+1.7.0
+-----
+
+*Released on 2021-09-22*
+
+ * Updated project dependencies.
+ * Fixed an issue with concurrent access to Element userData field
+   that references the original element even after calling clone().
+ * Created LICENSE file.
+
+
 1.6.0
 -----
 
