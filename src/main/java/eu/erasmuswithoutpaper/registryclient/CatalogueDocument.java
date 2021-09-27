@@ -56,11 +56,6 @@ class CatalogueDocument {
   private static final Logger logger = LoggerFactory.getLogger(CatalogueDocument.class);
 
   /**
-   * The key which we use to attach internal objects onto the DOM Elements we expose outside.
-   */
-  private static final String INTERNAL_USERDATA_KEY = "59a03da6-2456-4be1-9d21-13dc0df41978";
-
-  /**
    * The underlying catalogue document.
    *
    * <p>
@@ -272,7 +267,7 @@ class CatalogueDocument {
         if (this.certHeis.containsKey(fingerprint)) {
           coveredHeis = this.certHeis.get(fingerprint);
         } else {
-          coveredHeis = new HashSet<String>();
+          coveredHeis = new HashSet<>();
           this.certHeis.put(fingerprint, coveredHeis);
         }
         for (Element heiIdElem : Utils.asElementList((NodeList) xpath
@@ -287,7 +282,7 @@ class CatalogueDocument {
         if (this.cliKeyHeis.containsKey(fingerprint)) {
           coveredHeis = this.cliKeyHeis.get(fingerprint);
         } else {
-          coveredHeis = new HashSet<String>();
+          coveredHeis = new HashSet<>();
           this.cliKeyHeis.put(fingerprint, coveredHeis);
         }
         for (Element heiIdElem : Utils
@@ -367,7 +362,7 @@ class CatalogueDocument {
           value = (RSAPublicKey) rsaKeyFactory.generatePublic(spec);
           this.keyBodies.put(fingerprint, value);
         } catch (InvalidKeySpecException | ClassCastException e) {
-          logger.warn("Could not load object " + fingerprint + " as RSAPublicKey: " + e.toString());
+          logger.warn("Could not load object " + fingerprint + " as RSAPublicKey: " + e);
         }
       }
 
@@ -472,9 +467,7 @@ class CatalogueDocument {
       if (heis == null) {
         return false;
       }
-      if (!heis.contains(conds.getRequiredHei())) {
-        return false;
-      }
+      return heis.contains(conds.getRequiredHei());
     }
     return true;
   }
@@ -794,7 +787,6 @@ class CatalogueDocument {
     }
   }
 
-  @SuppressWarnings({ "serial" })
   static class CatalogueParserException extends RegistryClientException {
     CatalogueParserException(String message) {
       super(message);
