@@ -149,7 +149,10 @@ public class ClientImpl implements RegistryClient {
           this.doc = new CatalogueDocument(cachedResponse);
           logger.info("Loaded a catalogue from cache: {}", this.doc);
         } catch (CatalogueParserException | CouldNotDeserialize e) {
-          logger.debug("Could not load the catalogue from cache: " + e);
+          if (logger.isDebugEnabled()) {
+            logger.debug("Could not load the catalogue from cache: {}",
+                e.getClass().getSimpleName());
+          }
         }
       }
     }
@@ -500,7 +503,9 @@ public class ClientImpl implements RegistryClient {
     try {
       logger.trace("Fetching response from the catalogueFetcher");
       someResponse = catalogueFetcher.fetchCatalogue(this.doc.getETag());
-      logger.trace("Response fetched successfully: " + someResponse.getClass());
+      if (logger.isTraceEnabled()) {
+        logger.trace("Response fetched successfully: " + someResponse.getClass());
+      }
     } catch (IOException e) {
       logger.debug("CatalogueFetcher has thrown an IOException", e);
       throw new RefreshFailureException("Problem fetching the catalogue from server", e);
@@ -515,7 +520,10 @@ public class ClientImpl implements RegistryClient {
        * current version of the catalogue already parsed in our fields.
        */
 
-      logger.info("Extending the expiry date of our catalogue copy: " + someResponse.getExpires());
+      if (logger.isInfoEnabled()) {
+        logger
+            .info("Extending the expiry date of our catalogue copy: " + someResponse.getExpires());
+      }
       this.doc.extendExpiryDate(someResponse.getExpires());
 
       Map<String, byte[]> cache = this.options.getPersistentCacheMap();
@@ -598,9 +606,13 @@ public class ClientImpl implements RegistryClient {
   private void logRefreshFailure(String message, RefreshFailureException ex) {
     long age = new Date().getTime() - this.getExpiryDate().getTime();
     if (age > this.options.getStalenessWarningThreshold()) {
-      logger.warn(message + ": " + ex);
+      if (logger.isWarnEnabled()) {
+        logger.warn(message + ": " + ex);
+      }
     } else {
-      logger.info(message + ": " + ex);
+      if (logger.isInfoEnabled()) {
+        logger.info(message + ": " + ex);
+      }
     }
   }
 }

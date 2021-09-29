@@ -362,7 +362,9 @@ class CatalogueDocument {
           value = (RSAPublicKey) rsaKeyFactory.generatePublic(spec);
           this.keyBodies.put(fingerprint, value);
         } catch (InvalidKeySpecException | ClassCastException e) {
-          logger.warn("Could not load object " + fingerprint + " as RSAPublicKey: " + e);
+          if (logger.isWarnEnabled()) {
+            logger.warn("Could not load object " + fingerprint + " as RSAPublicKey: " + e);
+          }
         }
       }
 
