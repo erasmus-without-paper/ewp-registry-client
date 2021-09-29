@@ -787,6 +787,7 @@ class CatalogueDocument {
     }
   }
 
+  @SuppressWarnings("serial")
   static class CatalogueParserException extends RegistryClientException {
     CatalogueParserException(String message) {
       super(message);
