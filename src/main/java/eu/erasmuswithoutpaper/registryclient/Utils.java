@@ -54,8 +54,8 @@ class Utils {
     try {
       factory.setFeature(feature, value);
     } catch (ParserConfigurationException e) {
-      logger.warn("Your system's default DocumentBuilderFactory doesn't support the \"" + feature
-          + "\" feature. See https://github.com/erasmus-without-paper/ewp-registry-client/issues/2");
+      logger.warn("Your system's default DocumentBuilderFactory doesn't support the \"{}"
+          + "\" feature. See https://github.com/erasmus-without-paper/ewp-registry-client/issues/2", feature);
     }
   }
 

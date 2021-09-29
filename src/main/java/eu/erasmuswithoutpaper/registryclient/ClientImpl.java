@@ -131,7 +131,7 @@ public class ClientImpl implements RegistryClient {
   public ClientImpl(ClientImplOptions options) {
 
     this.options = options;
-    logger.info("Constructing new ClientImpl with options: " + options);
+    logger.info("Constructing new ClientImpl with options: {}", options);
 
     /*
      * If we are provided with a persistent cache, then will try to load a copy of the catalogue
@@ -147,7 +147,7 @@ public class ClientImpl implements RegistryClient {
           Http200RegistryResponse cachedResponse =
               Http200RegistryResponse.deserialize(cache.get(CATALOGUE_CACHE_KEY));
           this.doc = new CatalogueDocument(cachedResponse);
-          logger.info("Loaded a catalogue from cache: " + this.doc);
+          logger.info("Loaded a catalogue from cache: {}", this.doc);
         } catch (CatalogueParserException | CouldNotDeserialize e) {
           logger.debug("Could not load the catalogue from cache: " + e);
         }
@@ -213,7 +213,7 @@ public class ClientImpl implements RegistryClient {
                 Date now = new Date();
                 Date expiryDate = ClientImpl.this.getExpiryDate();
                 if (expiryDate.after(now)) {
-                  logger.trace("No refresh was necessary. Will retry at " + expiryDate);
+                  logger.trace("No refresh was necessary. Will retry at {}", expiryDate);
                   return ClientImpl.this.getExpiryDate();
                 }
                 ClientImpl.this.refresh();
@@ -531,7 +531,7 @@ public class ClientImpl implements RegistryClient {
             cache.put(CATALOGUE_CACHE_KEY, newCachedResponse.serialize());
             logger.trace("Successfully updated");
           } catch (CouldNotDeserialize e) {
-            logger.info("Could not extend the expiry date of the cached copy", e);
+            logger.info("Could not extend the expiry date of the cached copy");
           }
         } else {
           logger.debug("Cached copy not found");
@@ -552,7 +552,7 @@ public class ClientImpl implements RegistryClient {
       Http200RegistryResponse response = (Http200RegistryResponse) someResponse;
       try {
         this.doc = new CatalogueDocument(response);
-        logger.info("Catalogue copy successfully updated: " + this.doc);
+        logger.info("Catalogue copy successfully updated: {}", this.doc);
       } catch (CatalogueParserException e) {
         logger.debug("Could not parse the new catalogue", e);
         throw new RefreshFailureException(e);

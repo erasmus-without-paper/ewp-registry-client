@@ -72,7 +72,7 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
-    logger.debug("Opening HTTPS connection to " + url);
+    logger.debug("Opening HTTPS connection to {}", url);
     HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
     conn.setRequestMethod("GET");
     conn.setAllowUserInteraction(false);
@@ -80,7 +80,7 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     conn.connect();
 
     int status = conn.getResponseCode();
-    logger.debug("Registry API responded with HTTP " + status);
+    logger.debug("Registry API responded with HTTP {}", status);
 
     /* Adjust the value of "Expires" for the difference in server and client times. */
 
@@ -88,17 +88,17 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     long serverTimeNow = conn.getHeaderFieldDate("Date", clientTimeNow);
     long difference = serverTimeNow - clientTimeNow;
     if (Math.abs(difference) > 60000) {
-      logger.debug("Difference in server-client time is " + difference + "ms");
+      logger.debug("Difference in server-client time is {} ms", difference);
     }
     long serverTimeExpires = conn.getHeaderFieldDate("Expires", clientTimeNow + 300000);
     Date expires = new Date(clientTimeNow + (serverTimeExpires - serverTimeNow));
-    logger.debug("Effective expiry time: " + expires);
+    logger.debug("Effective expiry time: {}", expires);
 
     switch (status) {
       case 200:
         String newETag = conn.getHeaderField("ETag");
         byte[] content = readEntireStream(conn.getInputStream());
-        logger.debug("Read " + content.length + " bytes with ETag " + newETag);
+        logger.debug("Read {} bytes with ETag {}", content.length, newETag);
         return new Http200RegistryResponse(content, newETag, expires);
       case 304:
         return new Http304RegistryResponse(expires);

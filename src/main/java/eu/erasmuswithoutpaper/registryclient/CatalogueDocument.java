@@ -714,9 +714,9 @@ class CatalogueDocument {
       if (key != null) {
         return key;
       } else {
-        logger.warn("Catalogue contains a reference to a non-existent key " + fingerprint
+        logger.warn("Catalogue contains a reference to a non-existent key {}"
             + ". We will ignore this reference, but this shouldn't happen and should be "
-            + "investigated.");
+            + "investigated.", fingerprint);
       }
     }
     return null;
@@ -729,9 +729,9 @@ class CatalogueDocument {
       if (key != null) {
         result.add(key);
       } else {
-        logger.warn("Catalogue contains a reference to a non-existent key " + fingerprint
+        logger.warn("Catalogue contains a reference to a non-existent key {}"
             + ". We will ignore this reference, but this shouldn't happen and should be "
-            + "investigated.");
+            + "investigated.", fingerprint);
       }
     }
     return result;
