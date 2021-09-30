@@ -93,7 +93,9 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     switch (status) {
       case 200:
         String newETag = conn.getHeaderField("ETag");
-        byte[] content = readEntireStream(conn.getInputStream());
+        InputStream is = conn.getInputStream();
+        byte[] content = readEntireStream(is);
+        is.close();
         logger.debug("Read {} bytes with ETag {}", content.length, newETag);
         return new Http200RegistryResponse(content, newETag, expires);
       case 304:
