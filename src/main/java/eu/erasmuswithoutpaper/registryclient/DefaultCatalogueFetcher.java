@@ -3,7 +3,6 @@ package eu.erasmuswithoutpaper.registryclient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 
@@ -66,12 +65,8 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
 
   @Override
   public RegistryResponse fetchCatalogue(String previousETag) throws IOException {
-    URL url;
-    try {
-      url = new URL("https://" + this.registryDomain + "/catalogue-v1.xml");
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
+    URL url = new URL("https://" + this.registryDomain + "/catalogue-v1.xml");
+
     logger.debug("Opening HTTPS connection to {}", url);
     HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
     conn.setRequestMethod("GET");
