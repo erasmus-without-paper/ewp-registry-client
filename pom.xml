@@ -236,6 +236,7 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.6</version>
                 <configuration>
+                    <linkXRef>false</linkXRef>
                     <rulesets>
                         <ruleset>codestyle/pmd-ruleset.xml</ruleset>
                     </rulesets>
