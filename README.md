@@ -21,7 +21,7 @@ Installation and Documentation
 
 Requires **Java 7 SE**. Apart from that, and a tiny [SLF4J](http://slf4j.org/)
 API library, *no other dependencies are required*. The resulting JAR is only
-`44kB` in size (as of version `1.4.0`).
+`49kB` in size (as of version `1.8.0`).
 
 Releases are deployed to *Maven Central Repository*. You'll simply need to
 include a proper reference in your build's dependencies. Click the image below
