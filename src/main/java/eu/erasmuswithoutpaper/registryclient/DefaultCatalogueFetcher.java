@@ -72,11 +72,12 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     conn.setRequestMethod("GET");
     conn.setAllowUserInteraction(false);
     conn.setRequestProperty("If-None-Match", previousETag);
+    conn.setConnectTimeout(10 * 1000); // 10 sec, establish a connection
+    conn.setReadTimeout(60 * 1000); // 60 sec, read whole
     conn.connect();
 
     int status = conn.getResponseCode();
     logger.debug("Registry API responded with HTTP {}", status);
-
     /* Adjust the value of "Expires" for the difference in server and client times. */
 
     long clientTimeNow = System.currentTimeMillis();
