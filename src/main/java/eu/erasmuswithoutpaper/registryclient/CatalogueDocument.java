@@ -362,7 +362,9 @@ class CatalogueDocument {
           value = (RSAPublicKey) rsaKeyFactory.generatePublic(spec);
           this.keyBodies.put(fingerprint, value);
         } catch (InvalidKeySpecException | ClassCastException e) {
-          logger.warn("Could not load object " + fingerprint + " as RSAPublicKey: " + e);
+          if (logger.isWarnEnabled()) {
+            logger.warn("Could not load object " + fingerprint + " as RSAPublicKey: " + e);
+          }
         }
       }
 
@@ -714,9 +716,9 @@ class CatalogueDocument {
       if (key != null) {
         return key;
       } else {
-        logger.warn("Catalogue contains a reference to a non-existent key " + fingerprint
+        logger.warn("Catalogue contains a reference to a non-existent key {}"
             + ". We will ignore this reference, but this shouldn't happen and should be "
-            + "investigated.");
+            + "investigated.", fingerprint);
       }
     }
     return null;
@@ -729,9 +731,9 @@ class CatalogueDocument {
       if (key != null) {
         result.add(key);
       } else {
-        logger.warn("Catalogue contains a reference to a non-existent key " + fingerprint
+        logger.warn("Catalogue contains a reference to a non-existent key {}"
             + ". We will ignore this reference, but this shouldn't happen and should be "
-            + "investigated.");
+            + "investigated.", fingerprint);
       }
     }
     return result;
@@ -787,6 +789,7 @@ class CatalogueDocument {
     }
   }
 
+  @SuppressWarnings("serial")
   static class CatalogueParserException extends RegistryClientException {
     CatalogueParserException(String message) {
       super(message);

@@ -131,7 +131,7 @@ public class ClientImpl implements RegistryClient {
   public ClientImpl(ClientImplOptions options) {
 
     this.options = options;
-    logger.info("Constructing new ClientImpl with options: " + options);
+    logger.info("Constructing new ClientImpl with options: {}", options);
 
     /*
      * If we are provided with a persistent cache, then will try to load a copy of the catalogue
@@ -147,9 +147,12 @@ public class ClientImpl implements RegistryClient {
           Http200RegistryResponse cachedResponse =
               Http200RegistryResponse.deserialize(cache.get(CATALOGUE_CACHE_KEY));
           this.doc = new CatalogueDocument(cachedResponse);
-          logger.info("Loaded a catalogue from cache: " + this.doc);
+          logger.info("Loaded a catalogue from cache: {}", this.doc);
         } catch (CatalogueParserException | CouldNotDeserialize e) {
-          logger.debug("Could not load the catalogue from cache: " + e);
+          if (logger.isDebugEnabled()) {
+            logger.debug("Could not load the catalogue from cache: {}",
+                e.getClass().getSimpleName());
+          }
         }
       }
     }
@@ -213,7 +216,7 @@ public class ClientImpl implements RegistryClient {
                 Date now = new Date();
                 Date expiryDate = ClientImpl.this.getExpiryDate();
                 if (expiryDate.after(now)) {
-                  logger.trace("No refresh was necessary. Will retry at " + expiryDate);
+                  logger.trace("No refresh was necessary. Will retry at {}", expiryDate);
                   return ClientImpl.this.getExpiryDate();
                 }
                 ClientImpl.this.refresh();
@@ -500,7 +503,9 @@ public class ClientImpl implements RegistryClient {
     try {
       logger.trace("Fetching response from the catalogueFetcher");
       someResponse = catalogueFetcher.fetchCatalogue(this.doc.getETag());
-      logger.trace("Response fetched successfully: " + someResponse.getClass());
+      if (logger.isTraceEnabled()) {
+        logger.trace("Response fetched successfully: " + someResponse.getClass());
+      }
     } catch (IOException e) {
       logger.debug("CatalogueFetcher has thrown an IOException", e);
       throw new RefreshFailureException("Problem fetching the catalogue from server", e);
@@ -515,7 +520,10 @@ public class ClientImpl implements RegistryClient {
        * current version of the catalogue already parsed in our fields.
        */
 
-      logger.info("Extending the expiry date of our catalogue copy: " + someResponse.getExpires());
+      if (logger.isInfoEnabled()) {
+        logger
+            .info("Extending the expiry date of our catalogue copy: " + someResponse.getExpires());
+      }
       this.doc.extendExpiryDate(someResponse.getExpires());
 
       Map<String, byte[]> cache = this.options.getPersistentCacheMap();
@@ -531,7 +539,7 @@ public class ClientImpl implements RegistryClient {
             cache.put(CATALOGUE_CACHE_KEY, newCachedResponse.serialize());
             logger.trace("Successfully updated");
           } catch (CouldNotDeserialize e) {
-            logger.info("Could not extend the expiry date of the cached copy", e);
+            logger.info("Could not extend the expiry date of the cached copy");
           }
         } else {
           logger.debug("Cached copy not found");
@@ -552,7 +560,7 @@ public class ClientImpl implements RegistryClient {
       Http200RegistryResponse response = (Http200RegistryResponse) someResponse;
       try {
         this.doc = new CatalogueDocument(response);
-        logger.info("Catalogue copy successfully updated: " + this.doc);
+        logger.info("Catalogue copy successfully updated: {}", this.doc);
       } catch (CatalogueParserException e) {
         logger.debug("Could not parse the new catalogue", e);
         throw new RefreshFailureException(e);
@@ -598,9 +606,13 @@ public class ClientImpl implements RegistryClient {
   private void logRefreshFailure(String message, RefreshFailureException ex) {
     long age = new Date().getTime() - this.getExpiryDate().getTime();
     if (age > this.options.getStalenessWarningThreshold()) {
-      logger.warn(message + ": " + ex);
+      if (logger.isWarnEnabled()) {
+        logger.warn(message + ": " + ex);
+      }
     } else {
-      logger.info(message + ": " + ex);
+      if (logger.isInfoEnabled()) {
+        logger.info(message + ": " + ex);
+      }
     }
   }
 }

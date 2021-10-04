@@ -22,7 +22,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-class Utils {
+class Utils { // NOPMD
 
   /**
    * Helper class for {@link Utils#asElementList(NodeList)}.
@@ -54,8 +54,8 @@ class Utils {
     try {
       factory.setFeature(feature, value);
     } catch (ParserConfigurationException e) {
-      logger.warn("Your system's default DocumentBuilderFactory doesn't support the \"" + feature
-          + "\" feature. See https://github.com/erasmus-without-paper/ewp-registry-client/issues/2");
+      logger.warn("Your system's default DocumentBuilderFactory doesn't support the \"{}"
+          + "\" feature. See https://github.com/erasmus-without-paper/ewp-registry-client/issues/2", feature);
     }
   }
 

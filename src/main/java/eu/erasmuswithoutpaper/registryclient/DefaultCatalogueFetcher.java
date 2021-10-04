@@ -3,7 +3,6 @@ package eu.erasmuswithoutpaper.registryclient;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 
@@ -66,39 +65,38 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
 
   @Override
   public RegistryResponse fetchCatalogue(String previousETag) throws IOException {
-    URL url;
-    try {
-      url = new URL("https://" + this.registryDomain + "/catalogue-v1.xml");
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(e);
-    }
-    logger.debug("Opening HTTPS connection to " + url);
+    URL url = new URL("https://" + this.registryDomain + "/catalogue-v1.xml");
+
+    logger.debug("Opening HTTPS connection to {}", url);
     HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
     conn.setRequestMethod("GET");
     conn.setAllowUserInteraction(false);
     conn.setRequestProperty("If-None-Match", previousETag);
+    conn.setConnectTimeout(10 * 1000); // 10 sec, establish a connection
+    conn.setReadTimeout(60 * 1000); // 60 sec, read whole
     conn.connect();
 
     int status = conn.getResponseCode();
-    logger.debug("Registry API responded with HTTP " + status);
-
+    logger.debug("Registry API responded with HTTP {}", status);
     /* Adjust the value of "Expires" for the difference in server and client times. */
 
     long clientTimeNow = System.currentTimeMillis();
     long serverTimeNow = conn.getHeaderFieldDate("Date", clientTimeNow);
     long difference = serverTimeNow - clientTimeNow;
     if (Math.abs(difference) > 60000) {
-      logger.debug("Difference in server-client time is " + difference + "ms");
+      logger.debug("Difference in server-client time is {} ms", difference);
     }
     long serverTimeExpires = conn.getHeaderFieldDate("Expires", clientTimeNow + 300000);
     Date expires = new Date(clientTimeNow + (serverTimeExpires - serverTimeNow));
-    logger.debug("Effective expiry time: " + expires);
+    logger.debug("Effective expiry time: {}", expires);
 
     switch (status) {
       case 200:
         String newETag = conn.getHeaderField("ETag");
-        byte[] content = readEntireStream(conn.getInputStream());
-        logger.debug("Read " + content.length + " bytes with ETag " + newETag);
+        InputStream is = conn.getInputStream();
+        byte[] content = readEntireStream(is);
+        is.close();
+        logger.debug("Read {} bytes with ETag {}", content.length, newETag);
         return new Http200RegistryResponse(content, newETag, expires);
       case 304:
         return new Http304RegistryResponse(expires);
