@@ -122,7 +122,7 @@ class Utils { // NOPMD
 
       /*
        * XXE prevention. See here:
-       * https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#Java
+       * https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html#java
        */
       trySetFeature(dbf, "http://apache.org/xml/features/disallow-doctype-decl", true);
       trySetFeature(dbf, "http://xml.org/sax/features/external-general-entities", false);
