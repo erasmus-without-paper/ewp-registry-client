@@ -2,6 +2,23 @@ Release notes
 =============
 
 
+1.8.0
+-----
+
+*Released on 2022-03-02*
+
+* Updated Maven plugins
+* Updated minimal Maven version to 3.1.1
+* Updated Maven Checkstyle Plugin (2.17 -> 3.0.0)
+* DefaultCatalogueFetcher: closes inputSteam that is fully read
+* DefaultCatalogueFetcher: possible 1 minute timeout for reading registry
+* DefaultCatalogueFetcher: no need for special handle of MalformedURLException
+* Made use of SLF4J template style logging
+* Updated SLF4J (1.7.21 -> 1.7.32)
+* Updated findbugs jsr305 (3.0.1 -> 3.0.2)
+* Updated test dependencies
+
+
 1.7.0
 -----
 
