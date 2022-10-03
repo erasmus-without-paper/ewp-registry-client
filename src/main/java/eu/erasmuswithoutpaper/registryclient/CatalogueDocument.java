@@ -260,39 +260,87 @@ class CatalogueDocument {
     // Create indexes.
 
     try {
-      for (Element certElem : Utils.asElementList((NodeList) xpath.evaluate(
-          "r:host/r:client-credentials-in-use/r:certificate", root, XPathConstants.NODESET))) {
-        String fingerprint = certElem.getAttribute("sha-256");
-        Set<String> coveredHeis;
-        if (this.certHeis.containsKey(fingerprint)) {
-          coveredHeis = this.certHeis.get(fingerprint);
-        } else {
-          coveredHeis = new HashSet<>();
-          this.certHeis.put(fingerprint, coveredHeis);
+      List<? extends Element> elements = Utils.asElementList((NodeList) xpath.evaluate(
+          "r:host", root, XPathConstants.NODESET));
+      for (Element hostElem : elements) {
+
+        List<? extends Node> children = Utils.asNodeList((NodeList) hostElem.getChildNodes());
+        Node institutionsCovered = null;
+        Node clientCredentials = null;
+        Node serverCredentials = null;
+        for (Node child : children) {
+          if ("institutions-covered".equals(child.getLocalName())) {
+            institutionsCovered = child;
+          } else if ("client-credentials-in-use".equals(child.getLocalName())) {
+            clientCredentials = child;
+          } else if ("server-credentials-in-use".equals(child.getLocalName())) {
+            serverCredentials = child;
+          }
         }
-        for (Element heiIdElem : Utils.asElementList((NodeList) xpath
-            .evaluate("../../r:institutions-covered/r:hei-id", certElem, XPathConstants.NODESET))) {
-          coveredHeis.add(heiIdElem.getTextContent());
+
+        Set<String> coveredHeis = new HashSet<>();
+
+        if (institutionsCovered != null) {
+          List<? extends Node> heiNodes = Utils.asNodeList((NodeList) institutionsCovered.getChildNodes());
+          for (Node heiIdNode : heiNodes) {
+            if ("hei-id".equals(heiIdNode.getLocalName())) {
+              coveredHeis.add(heiIdNode.getTextContent());
+            }
+          }
+        }
+
+        Set<String> heis = new HashSet<>();
+        this.hostHeis.put(hostElem, heis);
+        heis.addAll(coveredHeis);
+
+        Set<String> keys = new HashSet<>();
+        this.hostServerKeys.put(hostElem, keys);
+
+        if (clientCredentials != null) {
+          List<? extends Node> credentialNodes = Utils.asNodeList((NodeList) clientCredentials.getChildNodes());
+          for (Node credential : credentialNodes) {
+            if ("certificate".equals(credential.getLocalName())) {
+              String fingerprint = credential.getAttributes().getNamedItem("sha-256").getTextContent();
+
+              Set<String> coveredCertHeis;
+
+              if (this.certHeis.containsKey(fingerprint)) {
+                coveredCertHeis = this.certHeis.get(fingerprint);
+              } else {
+                coveredCertHeis = new HashSet<>();
+                this.certHeis.put(fingerprint, coveredCertHeis);
+              }
+
+              coveredCertHeis.addAll(coveredHeis);
+
+            } else if ("rsa-public-key".equals(credential.getLocalName())) {
+              String fingerprint = credential.getAttributes().getNamedItem("sha-256").getTextContent();
+              Set<String> coveredKeyHeis;
+              if (this.cliKeyHeis.containsKey(fingerprint)) {
+                coveredKeyHeis = this.cliKeyHeis.get(fingerprint);
+              } else {
+                coveredKeyHeis = new HashSet<>();
+                this.cliKeyHeis.put(fingerprint, coveredKeyHeis);
+              }
+              coveredKeyHeis.addAll(coveredHeis);
+            }
+          }
+        }
+
+        if (serverCredentials != null) {
+          List<? extends Node> credentialNodes = Utils.asNodeList((NodeList) serverCredentials.getChildNodes());
+          for (Node credential : credentialNodes) {
+            if ("rsa-public-key".equals(credential.getLocalName())) {
+              String fingerprint = credential.getAttributes().getNamedItem("sha-256").getTextContent();
+              keys.add(fingerprint);
+            }
+          }
         }
       }
-      for (Element cliKeyElem : Utils.asElementList((NodeList) xpath.evaluate(
-          "r:host/r:client-credentials-in-use/r:rsa-public-key", root, XPathConstants.NODESET))) {
-        String fingerprint = cliKeyElem.getAttribute("sha-256");
-        Set<String> coveredHeis;
-        if (this.cliKeyHeis.containsKey(fingerprint)) {
-          coveredHeis = this.cliKeyHeis.get(fingerprint);
-        } else {
-          coveredHeis = new HashSet<>();
-          this.cliKeyHeis.put(fingerprint, coveredHeis);
-        }
-        for (Element heiIdElem : Utils
-            .asElementList((NodeList) xpath.evaluate("../../r:institutions-covered/r:hei-id",
-                cliKeyElem, XPathConstants.NODESET))) {
-          coveredHeis.add(heiIdElem.getTextContent());
-        }
-      }
-      for (Element otherIdElem : Utils.asElementList((NodeList) xpath
-          .evaluate("r:institutions/r:hei/r:other-id", root, XPathConstants.NODESET))) {
+
+      List<? extends Element> otherIdElems = Utils.asElementList((NodeList) xpath
+          .evaluate("r:institutions/r:hei/r:other-id", root, XPathConstants.NODESET));
+      for (Element otherIdElem : otherIdElems) {
         String type = otherIdElem.getAttribute("type");
         String value = otherIdElem.getTextContent();
         String heiId = ((Element) otherIdElem.getParentNode()).getAttribute("id");
@@ -305,14 +353,20 @@ class CatalogueDocument {
 
         mapForType.put(getCanonicalId(value), heiId);
       }
-      for (Element heiElem : Utils.asElementList(
-          (NodeList) xpath.evaluate("r:institutions/r:hei", root, XPathConstants.NODESET))) {
+
+      List<? extends Element> heiElems = Utils.asElementList(
+          (NodeList) xpath.evaluate("r:institutions/r:hei", root, XPathConstants.NODESET));
+
+      for (Element heiElem : heiElems) {
         String id = heiElem.getAttribute("id");
         HeiEntry hei = new HeiEntryImpl(id, heiElem);
         this.heiEntries.put(id, hei);
       }
-      for (Element apiElem : Utils.asElementList(
-          (NodeList) xpath.evaluate("r:host/r:apis-implemented/*", root, XPathConstants.NODESET))) {
+
+      List<? extends Element> apiElems = Utils.asElementList(
+          (NodeList) xpath.evaluate("r:host/r:apis-implemented/*", root, XPathConstants.NODESET));
+
+      for (Element apiElem : apiElems) {
 
         // newApiIndex's keys uniquely identify API's namespaceURI and localName.
 
@@ -327,24 +381,6 @@ class CatalogueDocument {
 
         entries.add(apiElem);
       }
-      for (Element hostElem : Utils
-          .asElementList((NodeList) xpath.evaluate("r:host", root, XPathConstants.NODESET))) {
-        Set<String> heis = new HashSet<>();
-        this.hostHeis.put(hostElem, heis);
-        for (Element heiIdElem : Utils.asElementList((NodeList) xpath
-            .evaluate("r:institutions-covered/r:hei-id", hostElem, XPathConstants.NODESET))) {
-          String heiId = heiIdElem.getTextContent();
-          heis.add(heiId);
-        }
-        Set<String> keys = new HashSet<>();
-        this.hostServerKeys.put(hostElem, keys);
-        for (Element keyElem : Utils
-            .asElementList((NodeList) xpath.evaluate("r:server-credentials-in-use/r:rsa-public-key",
-                hostElem, XPathConstants.NODESET))) {
-          String fingerprint = keyElem.getAttribute("sha-256");
-          keys.add(fingerprint);
-        }
-      }
 
       KeyFactory rsaKeyFactory;
       try {
@@ -352,8 +388,11 @@ class CatalogueDocument {
       } catch (NoSuchAlgorithmException e) {
         throw new RuntimeException(e);
       }
-      for (Element keyElem : Utils.asElementList(
-          (NodeList) xpath.evaluate("r:binaries/r:rsa-public-key", root, XPathConstants.NODESET))) {
+
+      List<? extends Element> keyElems = Utils.asElementList(
+          (NodeList) xpath.evaluate("r:binaries/r:rsa-public-key", root, XPathConstants.NODESET));
+
+      for (Element keyElem : keyElems) {
         String fingerprint = keyElem.getAttribute("sha-256");
         byte[] data = DatatypeConverter.parseBase64Binary(keyElem.getTextContent());
         X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
