@@ -2,6 +2,14 @@ Release notes
 =============
 
 
+1.9.0
+-----
+
+*Released on 2022-10-11*
+
+* Reduced indexes creation time by walking the DOM
+
+
 1.8.0
 -----
 
