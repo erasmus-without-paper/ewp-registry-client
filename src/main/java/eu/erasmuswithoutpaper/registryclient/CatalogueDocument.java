@@ -264,7 +264,7 @@ class CatalogueDocument {
           "r:host", root, XPathConstants.NODESET));
       for (Element hostElem : elements) {
 
-        List<? extends Node> children = Utils.asNodeList((NodeList) hostElem.getChildNodes());
+        List<? extends Node> children = Utils.asNodeList(hostElem.getChildNodes());
         Node institutionsCovered = null;
         Node clientCredentials = null;
         Node serverCredentials = null;
@@ -281,7 +281,7 @@ class CatalogueDocument {
         Set<String> coveredHeis = new HashSet<>();
 
         if (institutionsCovered != null) {
-          List<? extends Node> heiNodes = Utils.asNodeList((NodeList) institutionsCovered.getChildNodes());
+          List<? extends Node> heiNodes = Utils.asNodeList(institutionsCovered.getChildNodes());
           for (Node heiIdNode : heiNodes) {
             if ("hei-id".equals(heiIdNode.getLocalName())) {
               coveredHeis.add(heiIdNode.getTextContent());
@@ -297,10 +297,12 @@ class CatalogueDocument {
         this.hostServerKeys.put(hostElem, keys);
 
         if (clientCredentials != null) {
-          List<? extends Node> credentialNodes = Utils.asNodeList((NodeList) clientCredentials.getChildNodes());
+          List<? extends Node> credentialNodes =
+              Utils.asNodeList(clientCredentials.getChildNodes());
           for (Node credential : credentialNodes) {
             if ("certificate".equals(credential.getLocalName())) {
-              String fingerprint = credential.getAttributes().getNamedItem("sha-256").getTextContent();
+              String fingerprint =
+                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
 
               Set<String> coveredCertHeis;
 
@@ -314,7 +316,8 @@ class CatalogueDocument {
               coveredCertHeis.addAll(coveredHeis);
 
             } else if ("rsa-public-key".equals(credential.getLocalName())) {
-              String fingerprint = credential.getAttributes().getNamedItem("sha-256").getTextContent();
+              String fingerprint =
+                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
               Set<String> coveredKeyHeis;
               if (this.cliKeyHeis.containsKey(fingerprint)) {
                 coveredKeyHeis = this.cliKeyHeis.get(fingerprint);
@@ -328,10 +331,12 @@ class CatalogueDocument {
         }
 
         if (serverCredentials != null) {
-          List<? extends Node> credentialNodes = Utils.asNodeList((NodeList) serverCredentials.getChildNodes());
+          List<? extends Node> credentialNodes =
+              Utils.asNodeList(serverCredentials.getChildNodes());
           for (Node credential : credentialNodes) {
             if ("rsa-public-key".equals(credential.getLocalName())) {
-              String fingerprint = credential.getAttributes().getNamedItem("sha-256").getTextContent();
+              String fingerprint =
+                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
               keys.add(fingerprint);
             }
           }
@@ -828,7 +833,6 @@ class CatalogueDocument {
     }
   }
 
-  @SuppressWarnings("serial")
   static class CatalogueParserException extends RegistryClientException {
     CatalogueParserException(String message) {
       super(message);
