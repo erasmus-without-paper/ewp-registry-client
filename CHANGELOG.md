@@ -2,6 +2,14 @@ Release notes
 =============
 
 
+1.9.1
+-----
+
+*Released on 2023-02-01*
+
+* Fix multithreading issues when iterating DOM
+
+
 1.9.0
 -----
 
