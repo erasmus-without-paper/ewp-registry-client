@@ -23,32 +23,34 @@ class HeiEntryImpl implements HeiEntry {
     private Extras(HeiEntryImpl hei) {
       this.allNames = new HashMap<>();
       this.otherIds = new HashMap<>();
-      for (Node node : Utils.asNodeList(hei.elem.getChildNodes())) {
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-          continue;
-        }
-        Element elem = (Element) node;
-        String value = elem.getTextContent();
-        switch (elem.getTagName()) {
-          case "name":
-            String lang = elem.getAttributeNS(XMLConstants.XML_NS_URI, "lang");
-            if (value.length() > 0) {
-              this.allNames.put(lang, value);
-            }
-            break;
+      synchronized (hei.elem.getOwnerDocument()) {
+        for (Node node : Utils.asNodeList(hei.elem.getChildNodes())) {
+          if (node.getNodeType() != Node.ELEMENT_NODE) {
+            continue;
+          }
+          Element elem = (Element) node;
+          String value = elem.getTextContent();
+          switch (elem.getTagName()) {
+            case "name":
+              String lang = elem.getAttributeNS(XMLConstants.XML_NS_URI, "lang");
+              if (value.length() > 0) {
+                this.allNames.put(lang, value);
+              }
+              break;
 
-          case "other-id":
-            String idType = elem.getAttribute("type");
-            List<String> lst = this.otherIds.get(idType);
-            if (lst == null) {
-              lst = new ArrayList<>();
-              this.otherIds.put(idType, lst);
-            }
-            lst.add(value);
-            break;
+            case "other-id":
+              String idType = elem.getAttribute("type");
+              List<String> lst = this.otherIds.get(idType);
+              if (lst == null) {
+                lst = new ArrayList<>();
+                this.otherIds.put(idType, lst);
+              }
+              lst.add(value);
+              break;
 
-          default:
-            // Ingore.
+            default:
+              // Ingore.
+          }
         }
       }
     }

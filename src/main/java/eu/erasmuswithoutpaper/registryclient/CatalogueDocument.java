@@ -983,7 +983,9 @@ class CatalogueDocument {
 
     @Override
     public NodeList getChildNodes() {
-      return element.getChildNodes();
+      synchronized (element.getOwnerDocument()) {
+        return element.getChildNodes();
+      }
     }
 
     @Override
