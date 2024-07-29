@@ -36,8 +36,8 @@ public interface CatalogueFetcher {
      * Thrown by {@link Http200RegistryResponse#deserialize(byte[])} when the raw data could not be
      * deserialized into a valid {@link Http200RegistryResponse} object.
      */
-    @SuppressWarnings("serial")
     static class CouldNotDeserialize extends Exception {
+      private static final long serialVersionUID = -3124583265761204268L;
     }
 
     /**

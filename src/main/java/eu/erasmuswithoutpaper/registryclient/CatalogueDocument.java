@@ -834,6 +834,8 @@ class CatalogueDocument {
   }
 
   static class CatalogueParserException extends RegistryClientException {
+    private static final long serialVersionUID = 8536812850006770409L;
+
     CatalogueParserException(String message) {
       super(message);
     }
