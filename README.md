@@ -19,7 +19,7 @@ tools and specifications [here][develhub].
 Installation and Documentation
 ------------------------------
 
-Requires **Java 7 SE**. Apart from that, and a tiny [SLF4J](http://slf4j.org/)
+Requires at least **Java 8 SE**. Apart from that, and a tiny [SLF4J](http://slf4j.org/)
 API library, *no other dependencies are required*. The resulting JAR is only
 `49kB` in size (as of version `1.8.0`).
 
