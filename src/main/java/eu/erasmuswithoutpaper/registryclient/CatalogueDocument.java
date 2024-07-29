@@ -9,6 +9,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -20,7 +21,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPath;
@@ -399,7 +399,7 @@ class CatalogueDocument {
 
       for (Element keyElem : keyElems) {
         String fingerprint = keyElem.getAttribute("sha-256");
-        byte[] data = DatatypeConverter.parseBase64Binary(keyElem.getTextContent());
+        byte[] data = Base64.getMimeDecoder().decode(keyElem.getTextContent());
         X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
         RSAPublicKey value;
         try {

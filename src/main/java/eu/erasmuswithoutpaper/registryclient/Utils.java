@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.RandomAccess;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -94,7 +93,7 @@ class Utils { // NOPMD
       throw new RuntimeException(e);
     }
     byte[] binDigest = md.digest();
-    return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
+    return printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
   }
 
   static String extractFingerprint(RSAPublicKey publicKey) {
@@ -106,7 +105,20 @@ class Utils { // NOPMD
     }
     md.update(publicKey.getEncoded());
     byte[] binDigest = md.digest();
-    return DatatypeConverter.printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
+    return printHexBinary(binDigest).toLowerCase(Locale.ENGLISH);
+  }
+
+  private static final char[] hexCode = "0123456789ABCDEF".toCharArray();
+
+  // javax.xml.bind.DatatypeConverter copy so that code can work with JDK >=11 without any
+  // additional jar (DatatypeConverter was removed in JDK 11 and Deprecated since JDK 9)
+  private static String printHexBinary(byte[] data) {
+    StringBuilder builder = new StringBuilder(data.length * 2);
+    for (byte b : data) {
+      builder.append(hexCode[(b >> 4) & 0xF]);
+      builder.append(hexCode[(b & 0xF)]);
+    }
+    return builder.toString();
   }
 
   /**
