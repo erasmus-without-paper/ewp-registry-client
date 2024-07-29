@@ -1,6 +1,14 @@
 Release notes
 =============
 
+1.10.0
+------
+
+*Released on 2024-07-31*
+
+* Require at least Java 8
+* Java 11 compatibility without any hidden dependencies
+* Removed depracated getters in `ClientImpl`
 
 1.9.1
 -----
