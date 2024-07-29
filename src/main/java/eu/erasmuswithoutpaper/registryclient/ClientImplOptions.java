@@ -37,15 +37,6 @@ public class ClientImplOptions {
   }
 
   /**
-   * @return Same as {@link #isAutoRefreshing()}.
-   * @deprecated As of release 1.2.0, replaced by {@link #isAutoRefreshing()}.
-   */
-  @Deprecated
-  public boolean getAutoRefreshing() { // NOPMD
-    return this.isAutoRefreshing();
-  }
-
-  /**
    * @return The {@link CatalogueFetcher} instance which will be used by the client. See
    *         {@link #setCatalogueFetcher(CatalogueFetcher)}.
    */
@@ -72,15 +63,6 @@ public class ClientImplOptions {
    * @since 1.4.0
    */
   public Map<String, byte[]> getPersistentCacheMap() {
-    return this.persistentCacheMap;
-  }
-
-  /**
-   * @return The cache instance to be used. See {@link #setPersistentCacheMap(Map)}.
-   * @deprecated As of release 1.4.0, replaced by {@link #getPersistentCacheMap()}.
-   */
-  @Deprecated
-  public Map<String, byte[]> getPersistentCacheProvider() {
     return this.persistentCacheMap;
   }
 
