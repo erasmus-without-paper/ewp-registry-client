@@ -28,8 +28,8 @@ public interface RegistryClient extends AutoCloseable {
    *
    * @since 1.0.0
    */
-  @SuppressWarnings("serial")
   class AssertionFailedException extends RegistryClientException {
+    private static final long serialVersionUID = 656646825926200510L;
 
     public AssertionFailedException(String message) {
       super(message);
@@ -44,8 +44,8 @@ public interface RegistryClient extends AutoCloseable {
    *
    * @since 1.4.0
    */
-  @SuppressWarnings("serial")
   class InvalidApiEntryElement extends RegistryClientRuntimeException {
+    private static final long serialVersionUID = 77972919923555248L;
 
     public InvalidApiEntryElement() {
       super();
@@ -103,8 +103,8 @@ public interface RegistryClient extends AutoCloseable {
    *
    * @since 1.0.0
    */
-  @SuppressWarnings("serial")
   abstract class RegistryClientRuntimeException extends RuntimeException {
+    private static final long serialVersionUID = -415231440678898545L;
 
     public RegistryClientRuntimeException() {
       super();
@@ -130,8 +130,8 @@ public interface RegistryClient extends AutoCloseable {
    *
    * @since 1.6.0
    */
-  @SuppressWarnings("serial")
   class StaleApiEntryElement extends InvalidApiEntryElement {
+    private static final long serialVersionUID = -3103542220915317349L;
 
     public StaleApiEntryElement() {
       super();
@@ -164,8 +164,8 @@ public interface RegistryClient extends AutoCloseable {
    *
    * @since 1.0.0
    */
-  @SuppressWarnings("serial")
   class UnacceptableStalenessException extends RegistryClientRuntimeException {
+    private static final long serialVersionUID = 4562127026735066789L;
   }
 
   /**
