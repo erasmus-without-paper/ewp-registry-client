@@ -51,7 +51,6 @@
         <exclude name="CommentDefaultAccessModifier" />
         <exclude name="LinguisticNaming" />
         <exclude name="UselessParentheses" />
-        <exclude name="UseUnderscoresInNumericLiterals" />
         <exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
         <exclude name="CallSuperInConstructor" />
         <exclude name="UnnecessaryConstructor" />

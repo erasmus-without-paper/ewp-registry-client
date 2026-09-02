@@ -839,7 +839,7 @@ class CatalogueDocument {
     public boolean isStale() {
       long now = new Date().getTime();
       long diff = now - this.created;
-      return diff > 60000; // one minute
+      return diff > 60_000; // one minute
     }
   }
 

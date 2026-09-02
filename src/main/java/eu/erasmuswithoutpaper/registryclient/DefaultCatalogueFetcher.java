@@ -29,7 +29,7 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
   private static byte[] readEntireStream(InputStream is) throws IOException {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     int nread;
-    byte[] data = new byte[16384];
+    byte[] data = new byte[16_384];
     while ((nread = is.read(data, 0, data.length)) != -1) {
       buffer.write(data, 0, nread);
     }
@@ -74,8 +74,8 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     if (previousETag != null) {
       conn.setRequestProperty("If-None-Match", previousETag);
     }
-    conn.setConnectTimeout(10 * 1000); // 10 sec, establish a connection
-    conn.setReadTimeout(60 * 1000); // 60 sec, read whole
+    conn.setConnectTimeout(10 * 1_000); // 10 sec, establish a connection
+    conn.setReadTimeout(60 * 1_000); // 60 sec, read whole
     conn.connect();
 
     int status = conn.getResponseCode();
@@ -85,10 +85,10 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     long clientTimeNow = System.currentTimeMillis();
     long serverTimeNow = conn.getHeaderFieldDate("Date", clientTimeNow);
     long difference = serverTimeNow - clientTimeNow;
-    if (Math.abs(difference) > 60000) {
+    if (Math.abs(difference) > 60_000) {
       logger.debug("Difference in server-client time is {} ms", difference);
     }
-    long serverTimeExpires = conn.getHeaderFieldDate("Expires", clientTimeNow + 300000);
+    long serverTimeExpires = conn.getHeaderFieldDate("Expires", clientTimeNow + 300_000);
     Date expires = new Date(clientTimeNow + (serverTimeExpires - serverTimeNow));
     logger.debug("Effective expiry time: {}", expires);
 

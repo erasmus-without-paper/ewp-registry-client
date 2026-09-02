@@ -11,6 +11,8 @@ import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenes
  */
 public class ClientImplOptions {
 
+  private static final int ONE_DAY_IN_MILLIS = 86_400_000;
+
   private CatalogueFetcher catalogueFetcher;
   private long maxAcceptableStaleness;
   private boolean autoRefreshing;
@@ -29,11 +31,11 @@ public class ClientImplOptions {
    */
   public ClientImplOptions() {
     this.catalogueFetcher = new DefaultCatalogueFetcher();
-    this.maxAcceptableStaleness = 5 * 86400000;
+    this.maxAcceptableStaleness = 5 * ONE_DAY_IN_MILLIS;
     this.autoRefreshing = false;
     this.persistentCacheMap = null;
-    this.minTimeBetweenQueries = 60000;
-    this.timeBetweenRetries = 180000;
+    this.minTimeBetweenQueries = 60_000;
+    this.timeBetweenRetries = 180_000;
   }
 
   /**
@@ -73,7 +75,7 @@ public class ClientImplOptions {
    * @return milliseconds
    */
   public long getStalenessWarningThreshold() {
-    return Math.min(this.getMaxAcceptableStaleness() / 4, 86400000);
+    return Math.min(this.getMaxAcceptableStaleness() / 4, ONE_DAY_IN_MILLIS);
   }
 
   /**
