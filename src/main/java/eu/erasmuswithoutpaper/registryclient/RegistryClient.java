@@ -61,8 +61,8 @@ public interface RegistryClient extends AutoCloseable {
    *
    * @since 1.0.0
    */
-  @SuppressWarnings({ "serial" })
   class RefreshFailureException extends RegistryClientException {
+    private static final long serialVersionUID = 6597491401218679287L;
 
     public RefreshFailureException(Exception cause) {
       super(cause);
@@ -82,8 +82,8 @@ public interface RegistryClient extends AutoCloseable {
    *
    * @since 1.0.0
    */
-  @SuppressWarnings({ "serial" })
   abstract class RegistryClientException extends Exception {
+    private static final long serialVersionUID = -74937484871029463L;
 
     protected RegistryClientException(Exception cause) {
       super(cause);
