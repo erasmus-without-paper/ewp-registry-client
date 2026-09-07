@@ -581,9 +581,7 @@ class CatalogueDocument {
   Element findApi(ApiSearchConditions conditions) {
     Element bestChoice = null;
     for (Element entry : this.findApis(conditions)) {
-      if (bestChoice == null) {
-        bestChoice = entry;
-      } else if (!isComparableVersion(bestChoice.getAttribute("version"))) {
+      if (bestChoice == null || !isComparableVersion(bestChoice.getAttribute("version"))) {
         bestChoice = entry;
       } else {
         String currentBest = bestChoice.getAttribute("version");

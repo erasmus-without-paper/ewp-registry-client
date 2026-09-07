@@ -53,7 +53,6 @@
         <exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
         <exclude name="CallSuperInConstructor" />
         <exclude name="UnnecessaryConstructor" />
-        <exclude name="ConfusingTernary" />
     </rule>
 
     <rule ref="category/java/performance.xml">
