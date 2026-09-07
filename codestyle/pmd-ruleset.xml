@@ -17,7 +17,6 @@
         <exclude name="PreserveStackTrace" />
         <exclude name="MethodReturnsInternalArray" />
         <exclude name="AbstractClassWithoutAbstractMethod" />
-        <exclude name="GuardLogStatement" />
     </rule>
 
     <rule ref="category/java/errorprone.xml">

@@ -235,8 +235,9 @@ public class ClientImpl implements RegistryClient {
                  * Letting this one through would kill the task, and no further refresh would ever
                  * be scheduled.
                  */
-                logger.error("Scheduled catalogue refresh failed unexpectedly. Will retry in "
-                    + ClientImpl.this.options.getTimeBetweenRetries() + "ms.", e);
+                logger.error( // NOPMD
+                    "Scheduled catalogue refresh failed unexpectedly. Will retry in {} ms.",
+                    ClientImpl.this.options.getTimeBetweenRetries(), e);
                 return new Date(
                     new Date().getTime() + ClientImpl.this.options.getTimeBetweenRetries());
               }
