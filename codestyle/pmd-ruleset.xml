@@ -10,7 +10,6 @@
     <rule ref="category/java/bestpractices.xml">
         <!-- TODO Any rule entered here should be treated as something we want
              to avoid and should be deleted. -->
-        <exclude name="LiteralsFirstInComparisons" />
         <exclude name="LooseCoupling" />
         <exclude name="AvoidReassigningParameters" />
         <exclude name="MethodReturnsInternalArray" />

@@ -218,11 +218,10 @@ class CatalogueDocument {
     // Run a basic validation. (Just a sanity check. No detailed validation is necessary.)
 
     Element root = this.doc.getDocumentElement();
-    if (root.getNamespaceURI() == null
-        || !root.getNamespaceURI().equals(RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI)) {
+    if (!RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI.equals(root.getNamespaceURI())) {
       throw new CatalogueParserException("Catalogue namespace URI mismatch.");
     }
-    if (!root.getLocalName().equals("catalogue")) {
+    if (!"catalogue".equals(root.getLocalName())) {
       throw new CatalogueParserException("Catalogue localName mismatch.");
     }
 

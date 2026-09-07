@@ -100,7 +100,7 @@ class HeiEntryImpl implements HeiEntry {
     // No "en" found. Scan for other (less common) English xml:langs.
     // https://github.com/erasmus-without-paper/ewp-registry-client/pull/3#issuecomment-297677150
     for (String s : this.getExtras().allNames.keySet()) {
-      if (s.length() >= 2 && s.substring(0, 2).equalsIgnoreCase("en")) {
+      if (s.length() >= 2 && "en".equalsIgnoreCase(s.substring(0, 2))) {
         return this.getExtras().allNames.get(s);
       }
     }
