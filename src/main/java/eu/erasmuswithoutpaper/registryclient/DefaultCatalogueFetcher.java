@@ -30,7 +30,7 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     int nread;
     byte[] data = new byte[16_384];
-    while ((nread = is.read(data, 0, data.length)) != -1) {
+    while ((nread = is.read(data, 0, data.length)) != -1) { // NOPMD
       buffer.write(data, 0, nread);
     }
     buffer.flush();
