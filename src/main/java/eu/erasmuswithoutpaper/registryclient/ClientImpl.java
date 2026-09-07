@@ -165,7 +165,7 @@ public class ClientImpl implements RegistryClient {
     if (this.doc == null) {
       StringBuilder sb = new StringBuilder();
       sb.append("<catalogue xmlns='");
-      sb.append(RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI);
+      sb.append(REGISTRY_CATALOGUE_V1_NAMESPACE_URI);
       sb.append("'></catalogue>");
       byte[] content = sb.toString().getBytes(StandardCharsets.UTF_8);
       String newETag = "empty-placeholder";

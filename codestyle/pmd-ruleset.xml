@@ -1,11 +1,10 @@
-<?xml version="1.0"?>
-<ruleset
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="ewp-registry-client PMD Ruleset"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    name="ewp-registry-client PMD Ruleset"
-    xmlns="http://pmd.sf.net/ruleset/1.0.0"
-    xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd"
-    xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd"
 >
+
     <description>ewp-registry-client PMD Ruleset</description>
 
     <rule ref="category/java/bestpractices.xml">
@@ -15,6 +14,7 @@
         <exclude name="LooseCoupling" />
         <exclude name="AvoidReassigningParameters" />
         <exclude name="MethodReturnsInternalArray" />
+        <exclude name="ImplicitFunctionalInterface" />
         <exclude name="AbstractClassWithoutAbstractMethod" />
     </rule>
 
@@ -26,14 +26,12 @@
         <exclude name="AvoidLiteralsInIfCondition" />
         <exclude name="CloseResource" />
         <exclude name="ConstructorCallsOverridableMethod" />
+        <exclude name="ReplaceJavaUtilDate" />
     </rule>
 
     <rule ref="category/java/codestyle.xml">
         <exclude name="LongVariable" />
         <exclude name="ShortVariable" />
-
-        <exclude name="AbstractNaming" />
-        <exclude name="VariableNamingConventions" />
 
         <!-- TODO Any rule entered here should be treated as something we want
              to avoid and should be deleted. -->

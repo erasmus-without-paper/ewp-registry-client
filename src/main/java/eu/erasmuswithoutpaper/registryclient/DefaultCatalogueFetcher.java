@@ -89,7 +89,7 @@ public class DefaultCatalogueFetcher implements CatalogueFetcher {
       logger.debug("Difference in server-client time is {} ms", difference);
     }
     long serverTimeExpires = conn.getHeaderFieldDate("Expires", clientTimeNow + 300_000);
-    Date expires = new Date(clientTimeNow + (serverTimeExpires - serverTimeNow));
+    Date expires = new Date(clientTimeNow + serverTimeExpires - serverTimeNow);
     logger.debug("Effective expiry time: {}", expires);
 
     switch (status) {

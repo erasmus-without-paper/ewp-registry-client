@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-class Utils { // NOPMD
+class Utils {
 
   /**
    * Helper class for {@link Utils#asElementList(NodeList)}.
