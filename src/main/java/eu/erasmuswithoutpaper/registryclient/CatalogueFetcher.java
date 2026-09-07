@@ -82,7 +82,7 @@ public interface CatalogueFetcher {
     }
 
     byte[] getContent() {
-      return content;
+      return content; // NOPMD
     }
 
     String getETag() {
