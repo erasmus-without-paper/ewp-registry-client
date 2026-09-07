@@ -95,8 +95,15 @@ import org.w3c.dom.Element;
  */
 public class ClientImpl implements RegistryClient {
 
-  private static final String CATALOGUE_CACHE_KEY = "latest-catalogue";
   private static final Logger logger = LoggerFactory.getLogger(ClientImpl.class);
+
+  private static final String CATALOGUE_CACHE_KEY = "latest-catalogue";
+  private static final byte[] EMPTY_CONTENT;
+
+  static {
+    String content = "<catalogue xmlns='" + REGISTRY_CATALOGUE_V1_NAMESPACE_URI + "'></catalogue>";
+    EMPTY_CONTENT = content.getBytes(StandardCharsets.UTF_8);
+  }
 
   /**
    * {@link ClientImplOptions} which we've been constructed with.
@@ -163,15 +170,8 @@ public class ClientImpl implements RegistryClient {
     // If no cache was provided, or loading failed, then use an empty placeholder.
 
     if (this.doc == null) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("<catalogue xmlns='");
-      sb.append(REGISTRY_CATALOGUE_V1_NAMESPACE_URI);
-      sb.append("'></catalogue>");
-      byte[] content = sb.toString().getBytes(StandardCharsets.UTF_8);
-      String newETag = "empty-placeholder";
-      Date expires = new Date(0);
       Http200RegistryResponse emptyResponse =
-          new Http200RegistryResponse(content, newETag, expires);
+          new Http200RegistryResponse(EMPTY_CONTENT, "empty-placeholder", new Date(0));
       try {
         this.doc = new CatalogueDocument(emptyResponse);
       } catch (CatalogueParserException e) {
