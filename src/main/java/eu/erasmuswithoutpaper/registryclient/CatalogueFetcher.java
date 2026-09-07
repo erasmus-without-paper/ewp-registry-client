@@ -57,7 +57,7 @@ public interface CatalogueFetcher {
           String etag = (String) in.readObject();
           return new Http200RegistryResponse(content, etag, expires);
         } catch (StreamCorruptedException | ClassNotFoundException e) {
-          throw new CouldNotDeserialize();
+          throw new CouldNotDeserialize(); // NOPMD
         }
       } catch (IOException e) {
         throw new RuntimeException(e);

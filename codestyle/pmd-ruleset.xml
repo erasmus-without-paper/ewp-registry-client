@@ -14,7 +14,6 @@
         <exclude name="LiteralsFirstInComparisons" />
         <exclude name="LooseCoupling" />
         <exclude name="AvoidReassigningParameters" />
-        <exclude name="PreserveStackTrace" />
         <exclude name="MethodReturnsInternalArray" />
         <exclude name="AbstractClassWithoutAbstractMethod" />
     </rule>
