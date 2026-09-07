@@ -11,7 +11,6 @@
         <!-- TODO Any rule entered here should be treated as something we want
              to avoid and should be deleted. -->
         <exclude name="LooseCoupling" />
-        <exclude name="AvoidReassigningParameters" />
         <exclude name="MethodReturnsInternalArray" />
         <exclude name="ImplicitFunctionalInterface" />
         <exclude name="AbstractClassWithoutAbstractMethod" />

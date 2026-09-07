@@ -647,13 +647,12 @@ class CatalogueDocument {
    * version of the catalogue document.
    */
   String findHeiId(String type, String value) {
-    value = getCanonicalId(value);
     Map<String, String> mapForType = this.heiIdMaps.get(type);
     if (mapForType == null) {
       return null;
     }
     // It's thread-safe (Strings are immutable).
-    return mapForType.get(value);
+    return mapForType.get(getCanonicalId(value));
   }
 
   /**
