@@ -116,7 +116,7 @@ class Utils { // NOPMD
     StringBuilder builder = new StringBuilder(data.length * 2);
     for (byte b : data) {
       builder.append(hexCode[(b >> 4) & 0xF]);
-      builder.append(hexCode[(b & 0xF)]);
+      builder.append(hexCode[b & 0xF]);
     }
     return builder.toString();
   }

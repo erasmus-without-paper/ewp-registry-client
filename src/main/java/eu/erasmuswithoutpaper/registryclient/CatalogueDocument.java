@@ -198,7 +198,7 @@ class CatalogueDocument {
       // It seems that the Registry didn't supply the "Expires" header.
       // (In general, this shouldn't happen.)
       logger.warn("Missing 'Expires' header in catalogue response. Will assume 5 minutes.");
-      this.expires = new Date((new Date().getTime()) + 1000 * 60 * 5);
+      this.expires = new Date(new Date().getTime() + 1000 * 60 * 5);
     }
     this.etag = registryResponse.getETag();
 
@@ -216,7 +216,7 @@ class CatalogueDocument {
 
     Element root = this.doc.getDocumentElement();
     if (root.getNamespaceURI() == null
-        || (!root.getNamespaceURI().equals(RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI))) {
+        || !root.getNamespaceURI().equals(RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI)) {
       throw new CatalogueParserException("Catalogue namespace URI mismatch.");
     }
     if (!root.getLocalName().equals("catalogue")) {
@@ -501,11 +501,11 @@ class CatalogueDocument {
 
   private boolean doesElementMatchConditions(Element elem, ApiSearchConditions conds) {
     if (conds.getRequiredNamespaceUri() != null
-        && (!conds.getRequiredNamespaceUri().equals(elem.getNamespaceURI()))) {
+        && !conds.getRequiredNamespaceUri().equals(elem.getNamespaceURI())) {
       return false;
     }
     if (conds.getRequiredLocalName() != null
-        && (!conds.getRequiredLocalName().equals(elem.getLocalName()))) {
+        && !conds.getRequiredLocalName().equals(elem.getLocalName())) {
       return false;
     }
     if (conds.getRequiredMinVersion() != null) {

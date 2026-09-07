@@ -49,7 +49,6 @@
         <exclude name="OnlyOneReturn" />
         <exclude name="CommentDefaultAccessModifier" />
         <exclude name="LinguisticNaming" />
-        <exclude name="UselessParentheses" />
         <exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
         <exclude name="CallSuperInConstructor" />
         <exclude name="UnnecessaryConstructor" />
