@@ -27,6 +27,7 @@
         <exclude name="CloseResource" />
         <exclude name="ConstructorCallsOverridableMethod" />
         <exclude name="ReplaceJavaUtilDate" />
+        <exclude name="AvoidCatchingGenericException" />
     </rule>
 
     <rule ref="category/java/codestyle.xml">
