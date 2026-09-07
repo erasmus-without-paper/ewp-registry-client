@@ -55,6 +55,9 @@ class CatalogueDocument {
 
   private static final Logger logger = LoggerFactory.getLogger(CatalogueDocument.class);
 
+  private static final String FINGERPRINT_ATTR_NAME = "sha-256";
+  private static final String VERSION_ATTR_NAME = "version";
+
   /**
    * The underlying catalogue document.
    *
@@ -302,7 +305,7 @@ class CatalogueDocument {
           for (Node credential : credentialNodes) {
             if ("certificate".equals(credential.getLocalName())) {
               String fingerprint =
-                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
+                  credential.getAttributes().getNamedItem(FINGERPRINT_ATTR_NAME).getTextContent();
 
               Set<String> coveredCertHeis;
 
@@ -317,7 +320,7 @@ class CatalogueDocument {
 
             } else if ("rsa-public-key".equals(credential.getLocalName())) {
               String fingerprint =
-                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
+                  credential.getAttributes().getNamedItem(FINGERPRINT_ATTR_NAME).getTextContent();
               Set<String> coveredKeyHeis;
               if (this.cliKeyHeis.containsKey(fingerprint)) {
                 coveredKeyHeis = this.cliKeyHeis.get(fingerprint);
@@ -336,7 +339,7 @@ class CatalogueDocument {
           for (Node credential : credentialNodes) {
             if ("rsa-public-key".equals(credential.getLocalName())) {
               String fingerprint =
-                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
+                  credential.getAttributes().getNamedItem(FINGERPRINT_ATTR_NAME).getTextContent();
               keys.add(fingerprint);
             }
           }
@@ -398,7 +401,7 @@ class CatalogueDocument {
           (NodeList) xpath.evaluate("r:binaries/r:rsa-public-key", root, XPathConstants.NODESET));
 
       for (Element keyElem : keyElems) {
-        String fingerprint = keyElem.getAttribute("sha-256");
+        String fingerprint = keyElem.getAttribute(FINGERPRINT_ATTR_NAME);
         byte[] data = Base64.getMimeDecoder().decode(keyElem.getTextContent());
         X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
         RSAPublicKey value;
@@ -509,7 +512,7 @@ class CatalogueDocument {
       return false;
     }
     if (conds.getRequiredMinVersion() != null) {
-      String attrVer = elem.getAttribute("version");
+      String attrVer = elem.getAttribute(VERSION_ATTR_NAME);
       if (attrVer.isEmpty()) {
         return false;
       }
@@ -581,11 +584,11 @@ class CatalogueDocument {
   Element findApi(ApiSearchConditions conditions) {
     Element bestChoice = null;
     for (Element entry : this.findApis(conditions)) {
-      if (bestChoice == null || !isComparableVersion(bestChoice.getAttribute("version"))) {
+      if (bestChoice == null || !isComparableVersion(bestChoice.getAttribute(VERSION_ATTR_NAME))) {
         bestChoice = entry;
       } else {
-        String currentBest = bestChoice.getAttribute("version");
-        String newCandidate = entry.getAttribute("version");
+        String currentBest = bestChoice.getAttribute(VERSION_ATTR_NAME);
+        String newCandidate = entry.getAttribute(VERSION_ATTR_NAME);
         if (doesVersionXMatchMinimumRequiredVersionY(newCandidate, currentBest)) {
           bestChoice = entry;
         }
