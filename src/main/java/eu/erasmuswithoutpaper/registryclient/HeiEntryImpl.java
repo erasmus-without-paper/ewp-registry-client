@@ -59,7 +59,7 @@ class HeiEntryImpl implements HeiEntry {
   private final String id;
   private final Element elem;
 
-  private volatile Extras extras = null;
+  private volatile Extras extras;
 
   HeiEntryImpl(String id, Element heiElem) {
     this.id = id;

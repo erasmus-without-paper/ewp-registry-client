@@ -63,7 +63,6 @@
         <!-- TODO Any rule entered here should be treated as something we want
              to avoid and should be deleted. -->
          <exclude name="AvoidInstantiatingObjectsInLoops" />
-         <exclude name="RedundantFieldInitializer" />
     </rule>
 
 </ruleset>
