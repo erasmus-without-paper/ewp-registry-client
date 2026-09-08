@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-class Utils { // NOPMD
+class Utils {
 
   /**
    * Helper class for {@link Utils#asElementList(NodeList)}.
@@ -116,7 +116,7 @@ class Utils { // NOPMD
     StringBuilder builder = new StringBuilder(data.length * 2);
     for (byte b : data) {
       builder.append(hexCode[(b >> 4) & 0xF]);
-      builder.append(hexCode[(b & 0xF)]);
+      builder.append(hexCode[b & 0xF]);
     }
     return builder.toString();
   }

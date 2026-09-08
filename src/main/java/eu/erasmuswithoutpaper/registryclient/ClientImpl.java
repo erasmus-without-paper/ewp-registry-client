@@ -95,8 +95,15 @@ import org.w3c.dom.Element;
  */
 public class ClientImpl implements RegistryClient {
 
-  private static final String CATALOGUE_CACHE_KEY = "latest-catalogue";
   private static final Logger logger = LoggerFactory.getLogger(ClientImpl.class);
+
+  private static final String CATALOGUE_CACHE_KEY = "latest-catalogue";
+  private static final byte[] EMPTY_CONTENT;
+
+  static {
+    String content = "<catalogue xmlns='" + REGISTRY_CATALOGUE_V1_NAMESPACE_URI + "'></catalogue>";
+    EMPTY_CONTENT = content.getBytes(StandardCharsets.UTF_8);
+  }
 
   /**
    * {@link ClientImplOptions} which we've been constructed with.
@@ -163,15 +170,8 @@ public class ClientImpl implements RegistryClient {
     // If no cache was provided, or loading failed, then use an empty placeholder.
 
     if (this.doc == null) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("<catalogue xmlns='");
-      sb.append(RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI);
-      sb.append("'></catalogue>");
-      byte[] content = sb.toString().getBytes(StandardCharsets.UTF_8);
-      String newETag = "empty-placeholder";
-      Date expires = new Date(0);
       Http200RegistryResponse emptyResponse =
-          new Http200RegistryResponse(content, newETag, expires);
+          new Http200RegistryResponse(EMPTY_CONTENT, "empty-placeholder", new Date(0));
       try {
         this.doc = new CatalogueDocument(emptyResponse);
       } catch (CatalogueParserException e) {
@@ -235,8 +235,9 @@ public class ClientImpl implements RegistryClient {
                  * Letting this one through would kill the task, and no further refresh would ever
                  * be scheduled.
                  */
-                logger.error("Scheduled catalogue refresh failed unexpectedly. Will retry in "
-                    + ClientImpl.this.options.getTimeBetweenRetries() + "ms.", e);
+                logger.error( // NOPMD
+                    "Scheduled catalogue refresh failed unexpectedly. Will retry in {} ms.",
+                    ClientImpl.this.options.getTimeBetweenRetries(), e);
                 return new Date(
                     new Date().getTime() + ClientImpl.this.options.getTimeBetweenRetries());
               }
@@ -526,70 +527,69 @@ public class ClientImpl implements RegistryClient {
     // What kind of response did we receive?
 
     if (someResponse instanceof Http304RegistryResponse) {
-
-      /*
-       * Catalogue did not change since the previous call. This means that we already have the
-       * current version of the catalogue already parsed in our fields.
-       */
-
-      if (logger.isInfoEnabled()) {
-        logger
-            .info("Extending the expiry date of our catalogue copy: " + someResponse.getExpires());
-      }
-      this.doc.extendExpiryDate(someResponse.getExpires());
-
-      Map<String, byte[]> cache = this.options.getPersistentCacheMap();
-      if (cache != null) {
-        logger.trace("Trying to extend the expiry date of the cached copy too...");
-        byte[] data = cache.get(CATALOGUE_CACHE_KEY);
-        if (data != null) {
-          try {
-            Http200RegistryResponse oldCachedResponse = Http200RegistryResponse.deserialize(data);
-            Http200RegistryResponse newCachedResponse =
-                new Http200RegistryResponse(oldCachedResponse.getContent(),
-                    oldCachedResponse.getETag(), this.doc.getExpiryDate());
-            cache.put(CATALOGUE_CACHE_KEY, newCachedResponse.serialize());
-            logger.trace("Successfully updated");
-          } catch (CouldNotDeserialize e) {
-            logger.info("Could not extend the expiry date of the cached copy");
-          }
-        } else {
-          logger.debug("Cached copy not found");
-        }
-      }
-
-      return;
-
+      handle304((Http304RegistryResponse) someResponse);
     } else if (someResponse instanceof Http200RegistryResponse) {
-
-      /*
-       * Catalogue has changed. We will create a new document (along with all the indexes), and -
-       * once we complete this - start using it. (In the meantime, we will keep serving the previous
-       * document.)
-       */
-
-      logger.trace("Preparing a new catalogue copy");
-      Http200RegistryResponse response = (Http200RegistryResponse) someResponse;
-      try {
-        this.doc = new CatalogueDocument(response);
-        logger.info("Catalogue copy successfully updated: {}", this.doc);
-      } catch (CatalogueParserException e) {
-        logger.debug("Could not parse the new catalogue", e);
-        throw new RefreshFailureException(e);
-      }
-
-      // Also store the new response in persistent cache (if we have one).
-
-      Map<String, byte[]> cache = this.options.getPersistentCacheMap();
-      if (cache != null) {
-        logger.trace("Storing the new copy to cache...");
-        cache.put(CATALOGUE_CACHE_KEY, response.serialize());
-      }
-
+      handle200((Http200RegistryResponse) someResponse);
     } else {
       throw new RuntimeException(
           "CatalogueFetcher returned an unsupported RegistryResponse subclass: "
               + someResponse.getClass());
+    }
+  }
+
+  private void handle304(Http304RegistryResponse response) {
+    /*
+     * Catalogue did not change since the previous call. This means that we already have the current
+     * version of the catalogue already parsed in our fields.
+     */
+    if (logger.isInfoEnabled()) {
+      logger.info("Extending the expiry date of our catalogue copy: " + response.getExpires());
+    }
+    this.doc.extendExpiryDate(response.getExpires());
+
+    Map<String, byte[]> cache = this.options.getPersistentCacheMap();
+    if (cache != null) {
+      logger.trace("Trying to extend the expiry date of the cached copy too...");
+      byte[] data = cache.get(CATALOGUE_CACHE_KEY);
+      if (data != null) {
+
+        try {
+          Http200RegistryResponse oldCachedResponse = Http200RegistryResponse.deserialize(data);
+          Http200RegistryResponse newCachedResponse =
+              new Http200RegistryResponse(oldCachedResponse.getContent(),
+                  oldCachedResponse.getETag(), this.doc.getExpiryDate());
+          cache.put(CATALOGUE_CACHE_KEY, newCachedResponse.serialize());
+          logger.trace("Successfully updated");
+        } catch (CouldNotDeserialize e) {
+          logger.info("Could not extend the expiry date of the cached copy");
+        }
+
+      } else {
+        logger.debug("Cached copy not found");
+      }
+    }
+  }
+
+  private void handle200(Http200RegistryResponse response) throws RefreshFailureException {
+    /*
+     * Catalogue has changed. We will create a new document (along with all the indexes), and - once
+     * we complete this - start using it. (In the meantime, we will keep serving the previous
+     * document.)
+     */
+    logger.trace("Preparing a new catalogue copy");
+    try {
+      this.doc = new CatalogueDocument(response);
+      logger.info("Catalogue copy successfully updated: {}", this.doc);
+    } catch (CatalogueParserException e) {
+      logger.debug("Could not parse the new catalogue", e);
+      throw new RefreshFailureException(e);
+    }
+
+    // Also store the new response in persistent cache (if we have one).
+    Map<String, byte[]> cache = this.options.getPersistentCacheMap();
+    if (cache != null) {
+      logger.trace("Storing the new copy to cache...");
+      cache.put(CATALOGUE_CACHE_KEY, response.serialize());
     }
   }
 

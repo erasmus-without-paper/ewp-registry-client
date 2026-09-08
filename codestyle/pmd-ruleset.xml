@@ -1,30 +1,59 @@
-<?xml version="1.0"?>
-<ruleset
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="ewp-registry-client PMD Ruleset"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    name="ewp-registry-client PMD Ruleset"
-    xmlns="http://pmd.sf.net/ruleset/1.0.0"
-    xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd"
-    xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd"
 >
+
     <description>ewp-registry-client PMD Ruleset</description>
 
-    <rule ref="rulesets/java/basic.xml" />
-    <rule ref="rulesets/java/braces.xml" />
-    <rule ref="rulesets/java/clone.xml" />
-    <rule ref="rulesets/java/finalizers.xml" />
-    <rule ref="rulesets/java/imports.xml" />
-    <rule ref="rulesets/java/logging-java.xml" />
-    <rule ref="rulesets/java/naming.xml">
+    <rule ref="category/java/bestpractices.xml">
+        <!-- TODO Any rule entered here should be treated as something we want
+             to avoid and should be deleted. -->
+        <exclude name="LooseCoupling" />
+        <exclude name="ImplicitFunctionalInterface" />
+        <exclude name="AbstractClassWithoutAbstractMethod" />
+    </rule>
+
+    <rule ref="category/java/errorprone.xml">
+        <!-- TODO Any rule entered here should be treated as something we want
+             to avoid and should be deleted. -->
+        <exclude name="NullAssignment" />
+        <exclude name="AvoidLiteralsInIfCondition" />
+        <exclude name="CloseResource" />
+        <exclude name="ConstructorCallsOverridableMethod" />
+        <exclude name="ReplaceJavaUtilDate" />
+        <exclude name="AvoidCatchingGenericException" />
+    </rule>
+
+    <rule ref="category/java/codestyle.xml">
         <exclude name="LongVariable" />
         <exclude name="ShortVariable" />
-        <exclude name="AbstractNaming" />
-        <exclude name="VariableNamingConventions" />
+
+        <!-- TODO Any rule entered here should be treated as something we want
+             to avoid and should be deleted. -->
+        <exclude name="ClassNamingConventions" />
+        <exclude name="FieldNamingConventions" />
+        <exclude name="FormalParameterNamingConventions" />
+        <exclude name="LocalVariableNamingConventions" />
+        <exclude name="MethodNamingConventions" />
+        <exclude name="MethodArgumentCouldBeFinal" />
+        <exclude name="LocalVariableCouldBeFinal" />
+        <exclude name="OnlyOneReturn" />
+        <exclude name="CommentDefaultAccessModifier" />
+        <exclude name="LinguisticNaming" />
+        <exclude name="FieldDeclarationsShouldBeAtStartOfClass" />
+        <exclude name="CallSuperInConstructor" />
+        <exclude name="UnnecessaryConstructor" />
     </rule>
-    <rule ref="rulesets/java/strings.xml">
-        <exclude name="InsufficientStringBufferDeclaration" />
+
+    <rule ref="category/java/performance.xml">
         <exclude name="ConsecutiveAppendsShouldReuse" />
         <exclude name="ConsecutiveLiteralAppends" />
-        <exclude name="AvoidDuplicateLiterals" />
+
+        <!-- TODO Any rule entered here should be treated as something we want
+             to avoid and should be deleted. -->
+         <exclude name="AvoidInstantiatingObjectsInLoops" />
     </rule>
-    <rule ref="rulesets/java/unusedcode.xml" />
+
 </ruleset>

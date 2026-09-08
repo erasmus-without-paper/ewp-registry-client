@@ -55,6 +55,9 @@ class CatalogueDocument {
 
   private static final Logger logger = LoggerFactory.getLogger(CatalogueDocument.class);
 
+  private static final String FINGERPRINT_ATTR_NAME = "sha-256";
+  private static final String VERSION_ATTR_NAME = "version";
+
   /**
    * The underlying catalogue document.
    *
@@ -198,7 +201,7 @@ class CatalogueDocument {
       // It seems that the Registry didn't supply the "Expires" header.
       // (In general, this shouldn't happen.)
       logger.warn("Missing 'Expires' header in catalogue response. Will assume 5 minutes.");
-      this.expires = new Date((new Date().getTime()) + 1000 * 60 * 5);
+      this.expires = new Date(new Date().getTime() + 1000 * 60 * 5);
     }
     this.etag = registryResponse.getETag();
 
@@ -215,11 +218,10 @@ class CatalogueDocument {
     // Run a basic validation. (Just a sanity check. No detailed validation is necessary.)
 
     Element root = this.doc.getDocumentElement();
-    if (root.getNamespaceURI() == null
-        || (!root.getNamespaceURI().equals(RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI))) {
+    if (!RegistryClient.REGISTRY_CATALOGUE_V1_NAMESPACE_URI.equals(root.getNamespaceURI())) {
       throw new CatalogueParserException("Catalogue namespace URI mismatch.");
     }
-    if (!root.getLocalName().equals("catalogue")) {
+    if (!"catalogue".equals(root.getLocalName())) {
       throw new CatalogueParserException("Catalogue localName mismatch.");
     }
 
@@ -302,7 +304,7 @@ class CatalogueDocument {
           for (Node credential : credentialNodes) {
             if ("certificate".equals(credential.getLocalName())) {
               String fingerprint =
-                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
+                  credential.getAttributes().getNamedItem(FINGERPRINT_ATTR_NAME).getTextContent();
 
               Set<String> coveredCertHeis;
 
@@ -317,7 +319,7 @@ class CatalogueDocument {
 
             } else if ("rsa-public-key".equals(credential.getLocalName())) {
               String fingerprint =
-                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
+                  credential.getAttributes().getNamedItem(FINGERPRINT_ATTR_NAME).getTextContent();
               Set<String> coveredKeyHeis;
               if (this.cliKeyHeis.containsKey(fingerprint)) {
                 coveredKeyHeis = this.cliKeyHeis.get(fingerprint);
@@ -336,7 +338,7 @@ class CatalogueDocument {
           for (Node credential : credentialNodes) {
             if ("rsa-public-key".equals(credential.getLocalName())) {
               String fingerprint =
-                  credential.getAttributes().getNamedItem("sha-256").getTextContent();
+                  credential.getAttributes().getNamedItem(FINGERPRINT_ATTR_NAME).getTextContent();
               keys.add(fingerprint);
             }
           }
@@ -398,7 +400,7 @@ class CatalogueDocument {
           (NodeList) xpath.evaluate("r:binaries/r:rsa-public-key", root, XPathConstants.NODESET));
 
       for (Element keyElem : keyElems) {
-        String fingerprint = keyElem.getAttribute("sha-256");
+        String fingerprint = keyElem.getAttribute(FINGERPRINT_ATTR_NAME);
         byte[] data = Base64.getMimeDecoder().decode(keyElem.getTextContent());
         X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
         RSAPublicKey value;
@@ -501,15 +503,15 @@ class CatalogueDocument {
 
   private boolean doesElementMatchConditions(Element elem, ApiSearchConditions conds) {
     if (conds.getRequiredNamespaceUri() != null
-        && (!conds.getRequiredNamespaceUri().equals(elem.getNamespaceURI()))) {
+        && !conds.getRequiredNamespaceUri().equals(elem.getNamespaceURI())) {
       return false;
     }
     if (conds.getRequiredLocalName() != null
-        && (!conds.getRequiredLocalName().equals(elem.getLocalName()))) {
+        && !conds.getRequiredLocalName().equals(elem.getLocalName())) {
       return false;
     }
     if (conds.getRequiredMinVersion() != null) {
-      String attrVer = elem.getAttribute("version");
+      String attrVer = elem.getAttribute(VERSION_ATTR_NAME);
       if (attrVer.isEmpty()) {
         return false;
       }
@@ -581,13 +583,11 @@ class CatalogueDocument {
   Element findApi(ApiSearchConditions conditions) {
     Element bestChoice = null;
     for (Element entry : this.findApis(conditions)) {
-      if (bestChoice == null) {
-        bestChoice = entry;
-      } else if (!isComparableVersion(bestChoice.getAttribute("version"))) {
+      if (bestChoice == null || !isComparableVersion(bestChoice.getAttribute(VERSION_ATTR_NAME))) {
         bestChoice = entry;
       } else {
-        String currentBest = bestChoice.getAttribute("version");
-        String newCandidate = entry.getAttribute("version");
+        String currentBest = bestChoice.getAttribute(VERSION_ATTR_NAME);
+        String newCandidate = entry.getAttribute(VERSION_ATTR_NAME);
         if (doesVersionXMatchMinimumRequiredVersionY(newCandidate, currentBest)) {
           bestChoice = entry;
         }
@@ -647,13 +647,12 @@ class CatalogueDocument {
    * version of the catalogue document.
    */
   String findHeiId(String type, String value) {
-    value = getCanonicalId(value);
     Map<String, String> mapForType = this.heiIdMaps.get(type);
     if (mapForType == null) {
       return null;
     }
     // It's thread-safe (Strings are immutable).
-    return mapForType.get(value);
+    return mapForType.get(getCanonicalId(value));
   }
 
   /**
@@ -839,7 +838,7 @@ class CatalogueDocument {
     public boolean isStale() {
       long now = new Date().getTime();
       long diff = now - this.created;
-      return diff > 60000; // one minute
+      return diff > 60_000; // one minute
     }
   }
 
