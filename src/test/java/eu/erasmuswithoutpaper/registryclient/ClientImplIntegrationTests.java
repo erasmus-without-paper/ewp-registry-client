@@ -1,7 +1,9 @@
 package eu.erasmuswithoutpaper.registryclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -66,9 +68,9 @@ public class ClientImplIntegrationTests extends TestBase {
     Map<String, byte[]> cache = new HashMap<>();
     options.setPersistentCacheMap(cache);
     try (RegistryClient cli = new ClientImpl(options)) {
-      assertThat(cli.findApis(new ApiSearchConditions())).hasSize(11);
+      assertEquals(11, cli.findApis(new ApiSearchConditions()).size());
     }
-    assertThat(cache).isNotEmpty();
+    assertFalse(cache.isEmpty());
 
     // Then hand the same contents to a client via a cache that is purged in the meantime.
 
@@ -76,7 +78,7 @@ public class ClientImplIntegrationTests extends TestBase {
     purgingCache.putAll(cache);
     options.setPersistentCacheMap(purgingCache);
     try (RegistryClient cli = new ClientImpl(options)) {
-      assertThat(cli.findApis(new ApiSearchConditions())).hasSize(11);
+      assertEquals(11, cli.findApis(new ApiSearchConditions()).size());
     }
   }
 
@@ -114,8 +116,8 @@ public class ClientImplIntegrationTests extends TestBase {
     options.setTimeBetweenRetries(100);
 
     try (RegistryClient cli = new ClientImpl(options)) {
-      assertThat(fetchesAfterTheFailure.await(10, TimeUnit.SECONDS))
-          .as("a refresh should still be scheduled after an unchecked exception").isTrue();
+      assertTrue(fetchesAfterTheFailure.await(10, TimeUnit.SECONDS),
+          "a refresh should still be scheduled after an unchecked exception");
     }
   }
 
@@ -143,8 +145,8 @@ public class ClientImplIntegrationTests extends TestBase {
     try (RegistryClient cli = new ClientImpl(options)) {
       ApiSearchConditions conds = new ApiSearchConditions();
       conds.setApiClassRequired("urn:test", "some-api");
-      assertThat(cli.findApis(conds)).hasSize(2);
-      assertThat(cli.findApi(conds).getAttribute("version")).isEqualTo("1.5.0");
+      assertEquals(2, cli.findApis(conds).size());
+      assertEquals("1.5.0", cli.findApi(conds).getAttribute("version"));
     }
   }
 
@@ -186,7 +188,7 @@ public class ClientImplIntegrationTests extends TestBase {
     options.setCatalogueFetcher(fetcher1);
     try (RegistryClient cli = new ClientImpl(options)) {
       Collection<Element> apis = cli.findApis(new ApiSearchConditions());
-      assertThat(apis).hasSize(11);
+      assertEquals(11, apis.size());
     }
 
     // Use an "exception-raising" fetcher. ClientImpl should make use of cache and still work.
@@ -194,7 +196,7 @@ public class ClientImplIntegrationTests extends TestBase {
     options.setCatalogueFetcher(fetcher2);
     try (RegistryClient cli = new ClientImpl(options)) {
       Collection<Element> apis = cli.findApis(new ApiSearchConditions());
-      assertThat(apis).hasSize(11);
+      assertEquals(11, apis.size());
     }
 
     // Break the cache. ClientImpl should stop working, but not throw runtime exceptions.
@@ -216,7 +218,7 @@ public class ClientImplIntegrationTests extends TestBase {
     options.setCatalogueFetcher(fetcher1);
     try (RegistryClient cli = new ClientImpl(options)) {
       Collection<Element> apis = cli.findApis(new ApiSearchConditions());
-      assertThat(apis).hasSize(11);
+      assertEquals(11, apis.size());
     }
 
     // Verify if the cache was fixed in previous step.
@@ -224,7 +226,7 @@ public class ClientImplIntegrationTests extends TestBase {
     options.setCatalogueFetcher(fetcher2);
     try (RegistryClient cli = new ClientImpl(options)) {
       Collection<Element> apis = cli.findApis(new ApiSearchConditions());
-      assertThat(apis).hasSize(11);
+      assertEquals(11, apis.size());
     }
 
     // Clear the cache. (This should have the same effect as breaking it.)

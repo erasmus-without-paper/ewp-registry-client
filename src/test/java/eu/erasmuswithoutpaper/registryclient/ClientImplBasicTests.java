@@ -1,8 +1,14 @@
 package eu.erasmuswithoutpaper.registryclient;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.joox.JOOX.$;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -10,6 +16,7 @@ import java.lang.reflect.Method;
 import java.security.cert.Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -20,7 +27,6 @@ import eu.erasmuswithoutpaper.registryclient.RegistryClient.AssertionFailedExcep
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.RefreshFailureException;
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenessException;
 
-import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -62,7 +68,7 @@ public class ClientImplBasicTests extends TestBase {
 
     // Verify that cache age was updated.
 
-    assertThat(cli.getExpiryDate()).isInTheFuture();
+    assertTrue(cli.getExpiryDate().after(new Date()));
 
     // Load our test certificates.
 
@@ -90,57 +96,55 @@ public class ClientImplBasicTests extends TestBase {
     // Test if all certs and keys are loaded properly, and that their fingerprints
     // match what we expect.
 
-    assertThat(Utils.extractFingerprint(cert512))
-        .isEqualTo("ac738b33ba7e1347c7859dcbaf519b684fc127084c799259f53022ef1e26186f");
-    assertThat(Utils.extractFingerprint(cert1024))
-        .isEqualTo("0b9e993d1d4a4e1be879bc5be19c1c0b9073d7bfe1556e015c069c6df6231b7f");
-    assertThat(Utils.extractFingerprint(cert1536))
-        .isEqualTo("f47643e26f10fd1e5ffe2c933f0a5e6ccf831d789cd80a12720392e90a8f7d42");
-    assertThat(Utils.extractFingerprint(cert2048))
-        .isEqualTo("19fdd48a85595958035a1a42da8065709a585f78cc01b4df428f68eab39b9dda");
+    assertEquals("ac738b33ba7e1347c7859dcbaf519b684fc127084c799259f53022ef1e26186f",
+        Utils.extractFingerprint(cert512));
+    assertEquals("0b9e993d1d4a4e1be879bc5be19c1c0b9073d7bfe1556e015c069c6df6231b7f",
+        Utils.extractFingerprint(cert1024));
+    assertEquals("f47643e26f10fd1e5ffe2c933f0a5e6ccf831d789cd80a12720392e90a8f7d42",
+        Utils.extractFingerprint(cert1536));
+    assertEquals("19fdd48a85595958035a1a42da8065709a585f78cc01b4df428f68eab39b9dda",
+        Utils.extractFingerprint(cert2048));
 
-    assertThat(Utils.extractFingerprint(public512))
-        .isEqualTo("a29969edd0d04f22bf19db9e417b181c63928accdc58ecf3ac662e51d8497791");
-    assertThat(Utils.extractFingerprint(public1024))
-        .isEqualTo("4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b");
-    assertThat(Utils.extractFingerprint(public1536))
-        .isEqualTo("eb7ab845698d1294a9f1754f2eaa0975c9d9454f183d99122c71ae9e7acd518e");
-    assertThat(Utils.extractFingerprint(public2048))
-        .isEqualTo("2e06b1d53a1b7e2c54377d44a4f6893761421e196bb83ad90932d95512c967d1");
+    assertEquals("a29969edd0d04f22bf19db9e417b181c63928accdc58ecf3ac662e51d8497791",
+        Utils.extractFingerprint(public512));
+    assertEquals("4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b",
+        Utils.extractFingerprint(public1024));
+    assertEquals("eb7ab845698d1294a9f1754f2eaa0975c9d9454f183d99122c71ae9e7acd518e",
+        Utils.extractFingerprint(public1536));
+    assertEquals("2e06b1d53a1b7e2c54377d44a4f6893761421e196bb83ad90932d95512c967d1",
+        Utils.extractFingerprint(public2048));
   }
 
   @Test
   public void testAreHeisCoveredByCertOfKey() {
     Collection<String> heiIds = new ArrayList<>();
-    assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1024)).isTrue();
-    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1024)).isTrue();
+    assertTrue(cli.areHeisCoveredByCertificate(heiIds, cert1024));
+    assertTrue(cli.areHeisCoveredByClientKey(heiIds, public1024));
     heiIds.add("john.example.com");
-    assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1024)).isTrue();
-    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1024)).isTrue();
+    assertTrue(cli.areHeisCoveredByCertificate(heiIds, cert1024));
+    assertTrue(cli.areHeisCoveredByClientKey(heiIds, public1024));
     heiIds.add("fred.example.com");
-    assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1024)).isFalse();
-    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1024)).isFalse();
-    assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1536)).isTrue();
-    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1536)).isTrue();
+    assertFalse(cli.areHeisCoveredByCertificate(heiIds, cert1024));
+    assertFalse(cli.areHeisCoveredByClientKey(heiIds, public1024));
+    assertTrue(cli.areHeisCoveredByCertificate(heiIds, cert1536));
+    assertTrue(cli.areHeisCoveredByClientKey(heiIds, public1536));
     heiIds.add("");
-    assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1536)).isFalse();
-    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1536)).isFalse();
+    assertFalse(cli.areHeisCoveredByCertificate(heiIds, cert1536));
+    assertFalse(cli.areHeisCoveredByClientKey(heiIds, public1536));
     heiIds.add(null);
-    assertThat(cli.areHeisCoveredByCertificate(heiIds, cert1536)).isFalse();
-    assertThat(cli.areHeisCoveredByClientKey(heiIds, public1536)).isFalse();
+    assertFalse(cli.areHeisCoveredByCertificate(heiIds, cert1536));
+    assertFalse(cli.areHeisCoveredByClientKey(heiIds, public1536));
 
     // Overloaded version
 
-    assertThat(cli.areHeisCoveredByCertificate(new String[] {}, cert1024)).isTrue();
-    assertThat(cli.areHeisCoveredByClientKey(new String[] {}, public1024)).isTrue();
-    assertThat(cli.areHeisCoveredByCertificate(new String[] { "john.example.com" }, cert1024))
-        .isTrue();
-    assertThat(cli.areHeisCoveredByClientKey(new String[] { "john.example.com" }, public1024))
-        .isTrue();
-    assertThat(cli.areHeisCoveredByCertificate(
-        new String[] { "john.example.com", "fred.example.com" }, cert1024)).isFalse();
-    assertThat(cli.areHeisCoveredByClientKey(
-        new String[] { "john.example.com", "fred.example.com" }, public1024)).isFalse();
+    assertTrue(cli.areHeisCoveredByCertificate(new String[] {}, cert1024));
+    assertTrue(cli.areHeisCoveredByClientKey(new String[] {}, public1024));
+    assertTrue(cli.areHeisCoveredByCertificate(new String[] { "john.example.com" }, cert1024));
+    assertTrue(cli.areHeisCoveredByClientKey(new String[] { "john.example.com" }, public1024));
+    assertFalse(cli.areHeisCoveredByCertificate(
+        new String[] { "john.example.com", "fred.example.com" }, cert1024));
+    assertFalse(cli.areHeisCoveredByClientKey(
+        new String[] { "john.example.com", "fred.example.com" }, public1024));
   }
 
   @Test
@@ -153,14 +157,14 @@ public class ClientImplBasicTests extends TestBase {
     conds.setMinVersionRequired("1.1.5");
     conds.setRequiredHei("bob.example.com");
     Collection<Element> apis = cli.findApis(conds);
-    assertThat(apis).hasSize(1);
-    Element api2 = Lists.newArrayList(apis).get(0);
+    assertEquals(1, apis.size());
+    Element api2 = new ArrayList<>(apis).get(0);
 
     try {
       cli.assertApiIsCoveredByServerKey(api2, public512);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
-      assertThat(e).hasMessageContaining("doesn't seem to be covered by this server key");
+      assertTrue(e.getMessage().contains("doesn't seem to be covered by this server key"));
     }
 
     try {
@@ -176,13 +180,13 @@ public class ClientImplBasicTests extends TestBase {
       cli.assertCertificateIsKnown(cert512);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
-      assertThat(e).hasMessageContaining("was not recognized as a known EWP Client");
+      assertTrue(e.getMessage().contains("was not recognized as a known EWP Client"));
     }
     try {
       cli.assertClientKeyIsKnown(public512);
       fail("Exception expected, but not thrown.");
     } catch (AssertionFailedException e) {
-      assertThat(e).hasMessageContaining("was not recognized as a known EWP Client");
+      assertTrue(e.getMessage().contains("was not recognized as a known EWP Client"));
     }
     try {
       cli.assertCertificateIsKnown(cert1024);
@@ -308,151 +312,154 @@ public class ClientImplBasicTests extends TestBase {
     conds.setApiClassRequired(e2, "echo");
     conds.setRequiredHei("bob.example.com");
     Element api = cli.findApi(conds);
-    assertThat(api.getNamespaceURI()).isEqualTo(e2);
-    assertThat(api.getLocalName()).isEqualTo("echo");
-    assertThat(api.getAttribute("version")).isEqualTo("2.1.17");
+    assertEquals(e2, api.getNamespaceURI());
+    assertEquals("echo", api.getLocalName());
+    assertEquals("2.1.17", api.getAttribute("version"));
     conds.setRequiredHei("fred.example.com");
     api = cli.findApi(conds);
-    assertThat(api).isNull();
+    assertNull(api);
     conds.setRequiredHei("john.example.com");
     conds.setApiClassRequired("urn:other", "other-api");
     api = cli.findApi(conds);
-    assertThat(api.getAttribute("version")).isEqualTo("1.1.7");
+    assertEquals("1.1.7", api.getAttribute("version"));
     api.setAttribute("version", "this change should not influence future calls");
     conds.setMinVersionRequired("1.1.7");
     api = cli.findApi(conds);
-    assertThat(api.getAttribute("version")).isEqualTo("1.1.7");
+    assertEquals("1.1.7", api.getAttribute("version"));
     conds.setMinVersionRequired("1.1.8");
     api = cli.findApi(conds);
-    assertThat(api).isNull();
+    assertNull(api);
     conds.setApiClassRequired("urn:bla", "standalone2");
     api = cli.findApi(conds);
-    assertThat(api).isNull();
+    assertNull(api);
     conds.setRequiredHei(null);
     api = cli.findApi(conds);
-    assertThat(api.getAttribute("version")).isEqualTo("3.5.7");
+    assertEquals("3.5.7", api.getAttribute("version"));
     conds.setApiClassRequired("urn:bla", "standalone3");
     api = cli.findApi(conds);
-    assertThat(api.getAttribute("version")).isEqualTo("1.2.3");
+    assertEquals("1.2.3", api.getAttribute("version"));
   }
 
   @Test
   public void testFindApis() {
     ApiSearchConditions conds = new ApiSearchConditions();
-    assertThat(cli.findApis(conds)).hasSize(11);
+    assertEquals(11, cli.findApis(conds).size());
     conds.setRequiredHei("bob.example.com");
-    assertThat(cli.findApis(conds)).hasSize(4);
+    assertEquals(4, cli.findApis(conds).size());
     conds.setRequiredHei("unknown-hei-id");
-    assertThat(cli.findApis(conds)).hasSize(0);
+    assertEquals(0, cli.findApis(conds).size());
     conds.setRequiredHei(null);
-    assertThat(cli.findApis(conds)).hasSize(11);
+    assertEquals(11, cli.findApis(conds).size());
     String e2 =
         "https://github.com/erasmus-without-paper/ewp-specs-api-echo/blob/stable-v2/manifest-entry.xsd";
     conds.setApiClassRequired(e2, "echo");
-    assertThat(cli.findApis(conds)).hasSize(2);
+    assertEquals(2, cli.findApis(conds).size());
     conds.setApiClassRequired("urn:other", "other-api");
-    assertThat(cli.findApis(conds)).hasSize(2);
+    assertEquals(2, cli.findApis(conds).size());
     conds.setMinVersionRequired("1.1.6");
-    assertThat(cli.findApis(conds)).hasSize(1);
+    assertEquals(1, cli.findApis(conds).size());
     Element api = cli.findApis(conds).iterator().next();
-    assertThat($(api).find("url").text()).isEqualTo("https://example.com/super-other");
+    assertEquals("https://example.com/super-other", $(api).find("url").text());
 
     // Make sure that changing these values doesn't affect the underlying structures.
 
     $(api).find("url").text("CHANGED");
-    assertThat($(api).find("url").text()).isEqualTo("CHANGED");
+    assertEquals("CHANGED", $(api).find("url").text());
     api = cli.findApis(conds).iterator().next();
-    assertThat($(api).find("url").text()).isEqualTo("https://example.com/super-other");
+    assertEquals("https://example.com/super-other", $(api).find("url").text());
 
     conds.setApiClassRequired(null, null);
-    assertThat(cli.findApis(conds)).hasSize(8);
+    assertEquals(8, cli.findApis(conds).size());
     conds.setApiClassRequired("urn:bla", null);
-    assertThat(cli.findApis(conds)).hasSize(2);
+    assertEquals(2, cli.findApis(conds).size());
     conds.setMinVersionRequired("0");
-    assertThat(cli.findApis(conds)).hasSize(0);
+    assertEquals(0, cli.findApis(conds).size());
     conds.setMinVersionRequired("0.0.0");
-    assertThat(cli.findApis(conds)).hasSize(2);
+    assertEquals(2, cli.findApis(conds).size());
     conds.setMinVersionRequired(null);
-    assertThat(cli.findApis(conds)).hasSize(4);
+    assertEquals(4, cli.findApis(conds).size());
     conds.setRequiredHei("fred.example.com");
-    assertThat(cli.findApis(conds)).hasSize(0);
+    assertEquals(0, cli.findApis(conds).size());
 
     conds = new ApiSearchConditions();
     conds.setApiClassRequired("urn:bla", "standalone3");
-    assertThat(cli.findApis(conds)).hasSize(2);
+    assertEquals(2, cli.findApis(conds).size());
     conds.setMinVersionRequired("0.0.0");
-    assertThat(cli.findApis(conds)).hasSize(1);
+    assertEquals(1, cli.findApis(conds).size());
     conds.setMinVersionRequired("1.2.4");
-    assertThat(cli.findApis(conds)).hasSize(0);
+    assertEquals(0, cli.findApis(conds).size());
   }
 
   @Test
   public void testFindHeiById() {
     HeiEntry hei = cli.findHei("bob.example.com");
-    assertThat(hei).isNotNull();
-    assertThat(hei.getId()).isEqualTo("bob.example.com");
-    assertThat(hei.getName()).isIn("Bob's University", "University of the Bob");
-    assertThat(hei.getName("en")).isIn("Bob's University", "University of the Bob");
-    assertThat(hei.getName("es")).isEqualTo("Universidad de Bob");
-    assertThat(hei.getName("pl")).isNull();
-    assertThat(hei.getNameEnglish()).isIn("Bob's University", "University of the Bob");
-    assertThat(hei.getNameNonEnglish()).isIn("Universidad de Bob");
-    assertThat(hei.getOtherIds("erasmus")).containsExactlyInAnyOrder("BOB01");
-    assertThat(hei.getOtherIds("previous-schac")).containsExactlyInAnyOrder("bob.com", "bob.org");
+    assertNotNull(hei);
+    assertEquals("bob.example.com", hei.getId());
+    assertTrue(Arrays.asList("Bob's University", "University of the Bob").contains(hei.getName()));
+    assertTrue(Arrays.asList("Bob's University", "University of the Bob").contains(hei.getName("en")));
+    assertEquals("Universidad de Bob", hei.getName("es"));
+    assertNull(hei.getName("pl"));
+    assertTrue(Arrays.asList("Bob's University", "University of the Bob").contains(hei.getNameEnglish()));
+    assertTrue(Arrays.asList("Universidad de Bob").contains(hei.getNameNonEnglish()));
+    assertEquals(new HashSet<>(Arrays.asList("BOB01")), new HashSet<>(hei.getOtherIds("erasmus")));
+    assertEquals(new HashSet<>(Arrays.asList("bob.com", "bob.org")),
+        new HashSet<>(hei.getOtherIds("previous-schac")));
     hei = cli.findHei("nonexistent");
-    assertThat(hei).isNull();
+    assertNull(hei);
 
     // This one has its name only in English.
 
     hei = cli.findHei("fred.example.com");
-    assertThat(hei.getNameEnglish()).isIn("Fred's University");
-    assertThat(hei.getNameNonEnglish()).isNull();
+    assertTrue(Arrays.asList("Fred's University").contains(hei.getNameEnglish()));
+    assertNull(hei.getNameNonEnglish());
 
     // And this one has a single name with no xml:lang specified.
     // https://github.com/erasmus-without-paper/ewp-registry-client/pull/3#issuecomment-297671815
 
     hei = cli.findHei("john.example.com");
-    assertThat(hei.getNameEnglish()).isNull();
-    assertThat(hei.getNameNonEnglish()).isIn("John's University");
+    assertNull(hei.getNameEnglish());
+    assertTrue(Arrays.asList("John's University").contains(hei.getNameNonEnglish()));
 
     // This one has a name in Spanish only.
 
     hei = cli.findHei("weird.example.com");
-    assertThat(hei.getNameEnglish()).isNull();
-    assertThat(hei.getNameNonEnglish()).isIn("Universidad de Fantasmas");
+    assertNull(hei.getNameEnglish());
+    assertTrue(Arrays.asList("Universidad de Fantasmas").contains(hei.getNameNonEnglish()));
   }
 
   @Test
   public void testFindHeiByOtherId() {
     HeiEntry hei1 = cli.findHei("bob.example.com");
     HeiEntry hei2 = cli.findHei("previous-schac", "bob.org");
-    assertThat(hei1).isNotNull();
-    assertThat(hei2).isNotNull();
-    assertThat(hei1).isSameAs(hei2);
-    assertThat(cli.findHei("nonexistent", "nonexistent")).isNull();
+    assertNotNull(hei1);
+    assertNotNull(hei2);
+    assertSame(hei1, hei2);
+    assertNull(cli.findHei("nonexistent", "nonexistent"));
   }
 
   @Test
   public void testFindHeiId() {
-    assertThat(cli.findHeiId("a", "b")).isNull();
-    assertThat(cli.findHeiId("erasmus", "BOB01")).isEqualTo("bob.example.com");
-    assertThat(cli.findHeiId("erasmus", "bob01")).isEqualTo("bob.example.com");
-    assertThat(cli.findHeiId("erasmus", " Bob01 ")).isEqualTo("bob.example.com");
-    assertThat(cli.findHeiId("erasmus", " Bob 01 ")).isNull();
-    assertThat(cli.findHeiId("erasmus", " Bob02 ")).isNull();
-    assertThat(cli.findHeiId("pic", "12346")).isEqualTo("john.example.com");
-    assertThat(cli.findHeiId("previous-schac", "bob.com")).isEqualTo("bob.example.com");
-    assertThat(cli.findHeiId("previous-schac", "bob.org")).isEqualTo("bob.example.com");
+    assertNull(cli.findHeiId("a", "b"));
+    assertEquals("bob.example.com", cli.findHeiId("erasmus", "BOB01"));
+    assertEquals("bob.example.com", cli.findHeiId("erasmus", "bob01"));
+    assertEquals("bob.example.com", cli.findHeiId("erasmus", " Bob01 "));
+    assertNull(cli.findHeiId("erasmus", " Bob 01 "));
+    assertNull(cli.findHeiId("erasmus", " Bob02 "));
+    assertEquals("john.example.com", cli.findHeiId("pic", "12346"));
+    assertEquals("bob.example.com", cli.findHeiId("previous-schac", "bob.com"));
+    assertEquals("bob.example.com", cli.findHeiId("previous-schac", "bob.org"));
   }
 
   @Test
   public void testFindHeis() {
     ApiSearchConditions conds = new ApiSearchConditions();
     conds.setApiClassRequired("urn:other", "other-api", "1.1.6");
-    assertThat(cli.findHeis(conds)).containsExactlyInAnyOrder(cli.findHei("john.example.com"),
-        cli.findHei("fred.example.com"));
+    Collection<HeiEntry> expected = new ArrayList<>();
+    expected.add(cli.findHei("john.example.com"));
+    expected.add(cli.findHei("fred.example.com"));
+    assertEquals(new HashSet<>(expected), new HashSet<>(cli.findHeis(conds)));
     conds.setMinVersionRequired("7.0.0");
-    assertThat(cli.findHeis(conds)).isEmpty();
+    assertTrue(cli.findHeis(conds).isEmpty());
   }
 
   @Test
@@ -462,51 +469,54 @@ public class ClientImplBasicTests extends TestBase {
 
     RSAPublicKey result =
         cli.findRsaPublicKey("a29969edd0d04f22bf19db9e417b181c63928accdc58ecf3ac662e51d8497791");
-    assertThat(result).isEqualTo(public512);
-    assertThat(result).isNotSameAs(public512);
+    assertEquals(public512, result);
+    assertNotSame(public512, result);
 
     result =
         cli.findRsaPublicKey("4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b");
-    assertThat(result).isEqualTo(public1024);
-    assertThat(result).isNotSameAs(public1024);
+    assertEquals(public1024, result);
+    assertNotSame(public1024, result);
 
     // Make sure that the cache works (expect to receive exactly the same RSAPublicKey object).
 
     RSAPublicKey result2 =
         cli.findRsaPublicKey("4ecc086c841bc8ffa39ea03fa83243e4cda62cd5087e91a3259c09cb2278e15b");
-    assertThat(result2).isSameAs(result);
+    assertSame(result2, result);
 
     // This fingerprint exists, but it doesn't contain a valid public key. (In theory, this
     // should never happen, but the client should be prepared for bugs in Registry Service.)
 
     result =
         cli.findRsaPublicKey("89a5cce39127d8d873b912fdc810b739584d212414b1c78f38b3f9db5973dcc4");
-    assertThat(result).isNull();
+    assertNull(result);
   }
 
   @Test
   public void testGetAllHeis() {
-    assertThat(cli.getAllHeis()).containsExactlyInAnyOrder(cli.findHei("bob.example.com"),
-        cli.findHei("john.example.com"), cli.findHei("fred.example.com"),
-        cli.findHei("weird.example.com"));
+    Collection<HeiEntry> expected = new ArrayList<>();
+    expected.add(cli.findHei("bob.example.com"));
+    expected.add(cli.findHei("john.example.com"));
+    expected.add(cli.findHei("fred.example.com"));
+    expected.add(cli.findHei("weird.example.com"));
+    assertEquals(new HashSet<>(expected), new HashSet<>(cli.getAllHeis()));
   }
 
   @Test
   public void testGetHeisCoveredByCertOrKey() {
-    assertThat(cli.getHeisCoveredByCertificate(cert512)).isEmpty();
-    assertThat(cli.getHeisCoveredByClientKey(public512)).isEmpty();
-    assertThat(cli.getHeisCoveredByCertificate(cert1024))
-        .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "weird.example.com");
-    assertThat(cli.getHeisCoveredByClientKey(public1024))
-        .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "weird.example.com");
-    assertThat(cli.getHeisCoveredByCertificate(cert1536))
-        .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "fred.example.com");
-    assertThat(cli.getHeisCoveredByClientKey(public1536))
-        .containsExactlyInAnyOrder("john.example.com", "bob.example.com", "fred.example.com");
-    assertThat(cli.getHeisCoveredByCertificate(cert2048))
-        .containsExactlyInAnyOrder("bob.example.com");
-    assertThat(cli.getHeisCoveredByClientKey(public2048))
-        .containsExactlyInAnyOrder("bob.example.com");
+    assertTrue(cli.getHeisCoveredByCertificate(cert512).isEmpty());
+    assertTrue(cli.getHeisCoveredByClientKey(public512).isEmpty());
+    assertEquals(new HashSet<>(Arrays.asList("john.example.com", "bob.example.com", "weird.example.com")),
+        new HashSet<>(cli.getHeisCoveredByCertificate(cert1024)));
+    assertEquals(new HashSet<>(Arrays.asList("john.example.com", "bob.example.com", "weird.example.com")),
+        new HashSet<>(cli.getHeisCoveredByClientKey(public1024)));
+    assertEquals(new HashSet<>(Arrays.asList("john.example.com", "bob.example.com", "fred.example.com")),
+        new HashSet<>(cli.getHeisCoveredByCertificate(cert1536)));
+    assertEquals(new HashSet<>(Arrays.asList("john.example.com", "bob.example.com", "fred.example.com")),
+        new HashSet<>(cli.getHeisCoveredByClientKey(public1536)));
+    assertEquals(new HashSet<>(Arrays.asList("bob.example.com")),
+        new HashSet<>(cli.getHeisCoveredByCertificate(cert2048)));
+    assertEquals(new HashSet<>(Arrays.asList("bob.example.com")),
+        new HashSet<>(cli.getHeisCoveredByClientKey(public2048)));
 
     // Try to change it, expect to fail.
 
@@ -522,36 +532,36 @@ public class ClientImplBasicTests extends TestBase {
     } catch (UnsupportedOperationException e) {
       // Expected.
     }
-    assertThat(cli.getHeisCoveredByCertificate(cert2048))
-        .containsExactlyInAnyOrder("bob.example.com");
-    assertThat(cli.getHeisCoveredByClientKey(public2048))
-        .containsExactlyInAnyOrder("bob.example.com");
+    assertEquals(new HashSet<>(Arrays.asList("bob.example.com")),
+        new HashSet<>(cli.getHeisCoveredByCertificate(cert2048)));
+    assertEquals(new HashSet<>(Arrays.asList("bob.example.com")),
+        new HashSet<>(cli.getHeisCoveredByClientKey(public2048)));
   }
 
   @Test
   public void testIsCertOrKeyKnown() {
-    assertThat(cli.isCertificateKnown(cert512)).isFalse();
-    assertThat(cli.isClientKeyKnown(public512)).isFalse();
-    assertThat(cli.isCertificateKnown(cert1024)).isTrue();
-    assertThat(cli.isClientKeyKnown(public1024)).isTrue();
-    assertThat(cli.isCertificateKnown(cert1536)).isTrue();
-    assertThat(cli.isClientKeyKnown(public1536)).isTrue();
-    assertThat(cli.isCertificateKnown(cert2048)).isTrue();
-    assertThat(cli.isClientKeyKnown(public2048)).isTrue();
+    assertFalse(cli.isCertificateKnown(cert512));
+    assertFalse(cli.isClientKeyKnown(public512));
+    assertTrue(cli.isCertificateKnown(cert1024));
+    assertTrue(cli.isClientKeyKnown(public1024));
+    assertTrue(cli.isCertificateKnown(cert1536));
+    assertTrue(cli.isClientKeyKnown(public1536));
+    assertTrue(cli.isCertificateKnown(cert2048));
+    assertTrue(cli.isClientKeyKnown(public2048));
   }
 
   @Test
   public void testIsHeiCoveredByCertOrKey() {
-    assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert512)).isFalse();
-    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public512)).isFalse();
-    assertThat(cli.isHeiCoveredByCertificate("john.example.com", cert1024)).isTrue();
-    assertThat(cli.isHeiCoveredByClientKey("john.example.com", public1024)).isTrue();
-    assertThat(cli.isHeiCoveredByCertificate("bob.example.com", cert1024)).isTrue();
-    assertThat(cli.isHeiCoveredByClientKey("bob.example.com", public1024)).isTrue();
-    assertThat(cli.isHeiCoveredByCertificate("fred.example.com", cert1024)).isFalse();
-    assertThat(cli.isHeiCoveredByClientKey("fred.example.com", public1024)).isFalse();
-    assertThat(cli.isHeiCoveredByCertificate("unknown-hei-id", cert1024)).isFalse();
-    assertThat(cli.isHeiCoveredByClientKey("unknown-hei-id", public1024)).isFalse();
+    assertFalse(cli.isHeiCoveredByCertificate("john.example.com", cert512));
+    assertFalse(cli.isHeiCoveredByClientKey("john.example.com", public512));
+    assertTrue(cli.isHeiCoveredByCertificate("john.example.com", cert1024));
+    assertTrue(cli.isHeiCoveredByClientKey("john.example.com", public1024));
+    assertTrue(cli.isHeiCoveredByCertificate("bob.example.com", cert1024));
+    assertTrue(cli.isHeiCoveredByClientKey("bob.example.com", public1024));
+    assertFalse(cli.isHeiCoveredByCertificate("fred.example.com", cert1024));
+    assertFalse(cli.isHeiCoveredByClientKey("fred.example.com", public1024));
+    assertFalse(cli.isHeiCoveredByCertificate("unknown-hei-id", cert1024));
+    assertFalse(cli.isHeiCoveredByClientKey("unknown-hei-id", public1024));
   }
 
   @Test
@@ -569,62 +579,62 @@ public class ClientImplBasicTests extends TestBase {
     // There are two APIs matching these conditions. We want the 2.1.3 one (just for clarity).
     apis = apis.stream().filter(obj -> obj.getAttribute("version").equals("2.1.3"))
         .collect(Collectors.toList());
-    assertThat(apis).hasSize(1);
-    Element api1 = Lists.newArrayList(apis).get(0);
+    assertEquals(1, apis.size());
+    Element api1 = new ArrayList<>(apis).get(0);
 
     conds.setApiClassRequired("urn:other", "other-api");
     conds.setMinVersionRequired("1.1.5");
     conds.setRequiredHei("bob.example.com");
     apis = cli.findApis(conds);
-    assertThat(apis).hasSize(1);
-    Element api2 = Lists.newArrayList(apis).get(0);
+    assertEquals(1, apis.size());
+    Element api2 = new ArrayList<>(apis).get(0);
 
     conds.setApiClassRequired("urn:bla", "standalone2");
     conds.setMinVersionRequired("3.5.7");
     conds.setRequiredHei(null);
     apis = cli.findApis(conds);
-    assertThat(apis).hasSize(1);
-    Element api3 = Lists.newArrayList(apis).get(0);
+    assertEquals(1, apis.size());
+    Element api3 = new ArrayList<>(apis).get(0);
 
     conds.setApiClassRequired("urn:other", "other-api");
     conds.setMinVersionRequired("1.1.7");
     conds.setRequiredHei("fred.example.com");
     apis = cli.findApis(conds);
-    assertThat(apis).hasSize(1);
-    Element api4 = Lists.newArrayList(apis).get(0);
+    assertEquals(1, apis.size());
+    Element api4 = new ArrayList<>(apis).get(0);
 
     // All above APIs were marked with a comment in the catalogue file.
     // Test if the results match what is expected (see catalogue file).
 
-    assertThat(cli.isApiCoveredByServerKey(api1, public512)).isTrue();
-    assertThat(cli.isApiCoveredByServerKey(api1, public1024)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api1, public1536)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api1, public2048)).isFalse();
-    assertThat(cli.getServerKeysCoveringApi(api1)).hasSize(1);
-    assertThat(cli.getServerKeyCoveringApi(api1)).isEqualTo(public512);
+    assertTrue(cli.isApiCoveredByServerKey(api1, public512));
+    assertFalse(cli.isApiCoveredByServerKey(api1, public1024));
+    assertFalse(cli.isApiCoveredByServerKey(api1, public1536));
+    assertFalse(cli.isApiCoveredByServerKey(api1, public2048));
+    assertEquals(1, cli.getServerKeysCoveringApi(api1).size());
+    assertEquals(public512, cli.getServerKeyCoveringApi(api1));
 
-    assertThat(cli.isApiCoveredByServerKey(api2, public512)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api2, public1024)).isTrue();
-    assertThat(cli.isApiCoveredByServerKey(api2, public1536)).isTrue();
-    assertThat(cli.isApiCoveredByServerKey(api2, public2048)).isFalse();
-    assertThat(cli.getServerKeysCoveringApi(api2)).hasSize(2);
-    assertThat(cli.getServerKeysCoveringApi(api2)).containsExactlyInAnyOrder(public1024,
-        public1536);
-    assertThat(cli.getServerKeyCoveringApi(api2)).isIn(public1024, public1536);
+    assertFalse(cli.isApiCoveredByServerKey(api2, public512));
+    assertTrue(cli.isApiCoveredByServerKey(api2, public1024));
+    assertTrue(cli.isApiCoveredByServerKey(api2, public1536));
+    assertFalse(cli.isApiCoveredByServerKey(api2, public2048));
+    assertEquals(2, cli.getServerKeysCoveringApi(api2).size());
+    assertEquals(new HashSet<>(Arrays.asList(public1024, public1536)),
+        new HashSet<>(cli.getServerKeysCoveringApi(api2)));
+    assertTrue(Arrays.asList(public1024, public1536).contains(cli.getServerKeyCoveringApi(api2)));
 
-    assertThat(cli.isApiCoveredByServerKey(api3, public512)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api3, public1024)).isTrue();
-    assertThat(cli.isApiCoveredByServerKey(api3, public1536)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api3, public2048)).isFalse();
-    assertThat(cli.getServerKeysCoveringApi(api3)).hasSize(1);
-    assertThat(cli.getServerKeyCoveringApi(api3)).isEqualTo(public1024);
+    assertFalse(cli.isApiCoveredByServerKey(api3, public512));
+    assertTrue(cli.isApiCoveredByServerKey(api3, public1024));
+    assertFalse(cli.isApiCoveredByServerKey(api3, public1536));
+    assertFalse(cli.isApiCoveredByServerKey(api3, public2048));
+    assertEquals(1, cli.getServerKeysCoveringApi(api3).size());
+    assertEquals(public1024, cli.getServerKeyCoveringApi(api3));
 
-    assertThat(cli.isApiCoveredByServerKey(api4, public512)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api4, public1024)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api4, public1536)).isFalse();
-    assertThat(cli.isApiCoveredByServerKey(api4, public2048)).isFalse();
-    assertThat(cli.getServerKeysCoveringApi(api4)).hasSize(0);
-    assertThat(cli.getServerKeyCoveringApi(api4)).isNull();
+    assertFalse(cli.isApiCoveredByServerKey(api4, public512));
+    assertFalse(cli.isApiCoveredByServerKey(api4, public1024));
+    assertFalse(cli.isApiCoveredByServerKey(api4, public1536));
+    assertFalse(cli.isApiCoveredByServerKey(api4, public2048));
+    assertEquals(0, cli.getServerKeysCoveringApi(api4).size());
+    assertNull(cli.getServerKeyCoveringApi(api4));
   }
 
   @Test
@@ -647,7 +657,7 @@ public class ClientImplBasicTests extends TestBase {
 
       // Verify it's stale.
 
-      assertThat(cli.getExpiryDate()).isInThePast();
+      assertTrue(cli.getExpiryDate().before(new Date()));
 
       /*
        * Now, lets call all other tests in this class (with some exceptions) and expect them to
