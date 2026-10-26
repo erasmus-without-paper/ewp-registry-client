@@ -21,9 +21,9 @@ import eu.erasmuswithoutpaper.registryclient.RegistryClient.RefreshFailureExcept
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenessException;
 
 import org.assertj.core.util.Lists;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
 public class ClientImplBasicTests extends TestBase {
@@ -38,7 +38,7 @@ public class ClientImplBasicTests extends TestBase {
   private static RSAPublicKey public1536;
   private static RSAPublicKey public2048;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() {
 
     // Create a new client. Tell it to use a catalogue from our resources.
@@ -79,7 +79,7 @@ public class ClientImplBasicTests extends TestBase {
     public2048 = getPublicKey("public2048.pem");
   }
 
-  @AfterClass
+  @AfterAll
   public static void tearDownClass() {
     cli.close();
   }

@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import eu.erasmuswithoutpaper.registryclient.RegistryClient.UnacceptableStalenessException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Element;
 
 public class ClientImplIntegrationTests extends TestBase {
