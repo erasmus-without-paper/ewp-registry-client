@@ -1,6 +1,24 @@
 Release notes
 =============
 
+1.11.0
+------
+
+*Released on 2026-10-27*
+
+* Only send If-None-Match when an ETag is known
+* Do not re-read the persistent cache after checking it
+* Keep auto-refreshing after an unchecked exception
+* Do not let an incomparable version shadow a higher one in findApi
+* Publish using Sonatype Central
+* Upgrade Slf4j (1.7.32 -> 2.0.20)
+
+* Fix tests in JDK >= 11
+* Upgrade to JUnit 5
+* Upgrade PMD to the latest version
+* All maven plugins are up to date
+* Remove commons-collections4, commons-io and assertj-core dependencies from tests
+
 1.10.0
 ------
 
